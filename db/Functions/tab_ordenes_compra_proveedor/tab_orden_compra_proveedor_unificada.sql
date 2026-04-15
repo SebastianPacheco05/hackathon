@@ -8,7 +8,7 @@
  * CARACTERÍSTICAS:
  *   - Una fila por cada producto en cada orden de compra
  *   - Información completa de orden + detalle del producto
- *   - Trigger automático para actualizar stock al confirmar recepción
+ *   - Trigger automático para actualizar cant_stock al confirmar recepción
  *   - Control de estados por producto individual
  * 
  * ESTADOS DEL PRODUCTO EN ORDEN:
@@ -94,7 +94,7 @@ COMMENT ON TABLE tab_orden_compra_proveedor IS
 'Tabla unificada de órdenes de compra a proveedores con detalles de productos';
 
 COMMENT ON COLUMN tab_orden_compra_proveedor.ind_estado_producto IS 
-'Estado: 1=Solicitado, 2=Parcial, 3=Recibido (actualiza stock), 4=Cancelado';
+'Estado: 1=Solicitado, 2=Parcial, 3=Recibido (actualiza cant_stock), 4=Cancelado';
 
 COMMENT ON COLUMN tab_orden_compra_proveedor.subtotal_producto IS 
 'Calculado automáticamente: cantidad_solicitada * costo_unitario';
@@ -104,5 +104,5 @@ DO $$
 BEGIN
     RAISE NOTICE '✅ Tabla tab_orden_compra_proveedor creada exitosamente';
     RAISE NOTICE '📦 Unifica órdenes de compra + detalles de productos';
-    RAISE NOTICE '🔄 Lista para triggers de actualización de stock';
+    RAISE NOTICE '🔄 Lista para triggers de actualización de cant_stock';
 END $$; 

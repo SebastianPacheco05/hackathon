@@ -61,13 +61,13 @@ BEGIN
     RAISE NOTICE 'Iniciando actualización de estadísticas para orden PAGADA ID: %', NEW.id_orden;
     
     BEGIN
-        -- OBTENER: Categorías afectadas por esta orden (vía variant -> product -> category_id)
+        -- OBTENER: Categorías afectadas por esta orden (vía variant -> product -> id_categoria)
         FOR v_categoria_record IN 
-            SELECT DISTINCT p.category_id AS id_categoria
+            SELECT DISTINCT p.id_categoria AS id_categoria
             FROM tab_orden_productos op
-            JOIN tab_product_variant_combinations pv ON pv.id = op.variant_id
-            JOIN tab_product_variant_groups g ON g.id = pv.group_id
-            JOIN tab_products p ON p.id = g.product_id
+            JOIN tab_combinaciones_variante_producto pv ON pv.id_combinacion_variante = op.id_combinacion_variante
+            JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = pv.id_grupo_variante
+            JOIN tab_productos p ON p.id_producto = g.id_producto
             WHERE op.id_orden = NEW.id_orden
         LOOP
             -- ACTUALIZAR: Estadísticas de productos de la categoría
@@ -146,10 +146,10 @@ DECLARE
 BEGIN
     IF TG_OP = 'DELETE' THEN
         SELECT (o.ind_estado IN (2, 3)) INTO v_orden_pagada FROM tab_ordenes o WHERE o.id_orden = OLD.id_orden;
-        SELECT p.category_id INTO v_category_id FROM tab_product_variant_combinations pv JOIN tab_product_variant_groups g ON g.id = pv.group_id JOIN tab_products p ON p.id = g.product_id WHERE pv.id = OLD.variant_id;
+        SELECT p.id_categoria INTO v_category_id FROM tab_combinaciones_variante_producto pv JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = pv.id_grupo_variante JOIN tab_productos p ON p.id_producto = g.id_producto WHERE pv.id_combinacion_variante = OLD.id_combinacion_variante;
     ELSE
         SELECT (o.ind_estado IN (2, 3)) INTO v_orden_pagada FROM tab_ordenes o WHERE o.id_orden = NEW.id_orden;
-        SELECT p.category_id INTO v_category_id FROM tab_product_variant_combinations pv JOIN tab_product_variant_groups g ON g.id = pv.group_id JOIN tab_products p ON p.id = g.product_id WHERE pv.id = NEW.variant_id;
+        SELECT p.id_categoria INTO v_category_id FROM tab_combinaciones_variante_producto pv JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = pv.id_grupo_variante JOIN tab_productos p ON p.id_producto = g.id_producto WHERE pv.id_combinacion_variante = NEW.id_combinacion_variante;
     END IF;
 
     IF v_orden_pagada AND v_category_id IS NOT NULL THEN

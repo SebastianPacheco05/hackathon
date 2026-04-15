@@ -21,7 +21,7 @@
  *   2 = Pagada        (pago confirmado, en preparación) ← ESTADO REQUERIDO
  *   3 = Completada    (entrega confirmada)              ← ESTA FUNCIÓN
  * 
- * NOTA: Los procesos críticos (puntos, stock, estadísticas) se ejecutan
+ * NOTA: Los procesos críticos (puntos, cant_stock, estadísticas) se ejecutan
  *       en el estado PAGADA, no aquí. Esta función solo confirma entrega.
  * 
  * RETORNA: JSON con resultado:
@@ -104,7 +104,7 @@ BEGIN
             'fecha_pedido', v_orden_record.fec_pedido,
             'metodo_pago', v_orden_record.metodo_pago
         ),
-        'nota', 'Los procesos críticos (puntos, stock, estadísticas) se ejecutaron cuando se marcó como PAGADA',
+        'nota', 'Los procesos críticos (puntos, cant_stock, estadísticas) se ejecutaron cuando se marcó como PAGADA',
         'timestamp', NOW()
     );
     

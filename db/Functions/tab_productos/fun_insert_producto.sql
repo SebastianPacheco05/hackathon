@@ -1,5 +1,5 @@
 /*
- * Inserta un producto en la tabla products (slug único generado desde nombre).
+ * Inserta un producto en la tabla products (slug_producto único generado desde nombre).
  * No inserta variantes ni imágenes; usar fun_insert_product_variant y fun_insert_product_image.
  */
 CREATE OR REPLACE FUNCTION fun_insert_producto(
@@ -17,8 +17,8 @@ DECLARE
     v_usr DECIMAL(10);
 BEGIN
     v_usr := COALESCE(p_usr_operacion, 0);
-    IF p_category_id IS NULL OR NOT EXISTS (SELECT 1 FROM tab_categories WHERE id = p_category_id) THEN
-        RETURN 'Error: category_id obligatorio y debe existir.';
+    IF p_category_id IS NULL OR NOT EXISTS (SELECT 1 FROM tab_categorias WHERE id_categoria = p_category_id) THEN
+        RETURN 'Error: id_categoria obligatorio y debe existir.';
     END IF;
     IF p_name IS NULL OR length(trim(p_name)) < 2 THEN
         RETURN 'Error: El nombre es obligatorio (mín. 2 caracteres).';
@@ -30,10 +30,10 @@ BEGIN
         RETURN 'Error: id_proveedor no existe.';
     END IF;
 
-    v_id := (SELECT COALESCE(MAX(id), 0) + 1 FROM tab_products);
-    v_slug := fun_generate_unique_slug(p_name, 'tab_products', NULL);
+    v_id := (SELECT COALESCE(MAX(id_producto), 0) + 1 FROM tab_productos);
+    v_slug := fun_generate_unique_slug(p_name, 'tab_productos', NULL);
 
-    INSERT INTO tab_products (id, category_id, name, slug, description, id_marca, is_active, usr_insert, id_proveedor)
+    INSERT INTO tab_productos (id_producto, id_categoria, nom_producto, slug_producto, descripcion, id_marca, ind_activo, usr_insert, id_proveedor)
     VALUES (v_id, p_category_id, trim(p_name), v_slug, p_description, p_id_marca, COALESCE(p_is_active, TRUE), v_usr, p_id_proveedor);
 
     RETURN 'OK:' || v_id;

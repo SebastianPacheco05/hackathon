@@ -55,13 +55,13 @@ CREATE TRIGGER trg_actualizar_estadisticas_cambio_producto_orden
     EXECUTE FUNCTION fun_trigger_actualizar_estadisticas_producto_orden();
 
 -- =====================================================
--- TRIGGER: Actualizar stock al PAGAR orden
+-- TRIGGER: Actualizar cant_stock al PAGAR orden
 -- =====================================================
 
 /*
  * TRIGGER: trg_actualizar_stock_orden_pagada
  * 
- * DESCRIPCIÓN: Reduce automáticamente el stock de productos cuando se PAGA una orden.
+ * DESCRIPCIÓN: Reduce automáticamente el cant_stock de productos cuando se PAGA una orden.
  *              Usa la función fun_actualizar_stock_automatico en modo "orden completa".
  */
 
@@ -87,9 +87,9 @@ CREATE TRIGGER trg_actualizar_stock_orden_pagada
 DROP TRIGGER IF EXISTS trg_marcar_orden_pagada_mercadopago ON tab_pagos;
 
 CREATE TRIGGER trg_marcar_orden_pagada_mercadopago
-    AFTER UPDATE OF status ON tab_pagos
+    AFTER UPDATE OF estado_pago ON tab_pagos
     FOR EACH ROW
-    WHEN (NEW.status = 'approved') -- Solo cuando se aprueba el pago
+    WHEN (NEW.estado_pago = 'APPROVED') -- Solo cuando se aprueba el pago
     EXECUTE FUNCTION fun_trigger_marcar_orden_pagada_auto();
 
 
@@ -121,14 +121,14 @@ DROP TRIGGER IF EXISTS trg_restaurar_stock_cancelacion ON tab_ordenes;
 
 
 -- =====================================================
--- TRIGGER: Restaurar stock al cancelar orden
+-- TRIGGER: Restaurar cant_stock al cancelar orden
 -- =====================================================
 
 /*
  * TRIGGER: trg_restaurar_stock_cancelacion
  * 
  * DESCRIPCIÓN: Se ejecuta cuando se actualiza una orden.
- *              Si la orden se marca como cancelada, restaura el stock.
+ *              Si la orden se marca como cancelada, restaura el cant_stock.
  */
 CREATE TRIGGER trg_restaurar_stock_cancelacion
     AFTER UPDATE ON tab_ordenes
@@ -156,14 +156,14 @@ CREATE TRIGGER trg_validar_producto_compra_proveedor
 
 
 -- =====================================================
--- TRIGGER: Actualizar stock al recibir productos
+-- TRIGGER: Actualizar cant_stock al recibir productos
 -- =====================================================
 
 /*
  * TRIGGER: trg_actualizar_stock_compra_proveedor
  * 
  * DESCRIPCIÓN: Se ejecuta cuando se actualiza el estado de un producto en una orden de compra a proveedor.
- *              Actualiza el stock de los productos recibidos.
+ *              Actualiza el cant_stock de los productos recibidos.
  */
 DROP TRIGGER IF EXISTS trg_actualizar_stock_compra_proveedor ON tab_orden_compra_proveedor;
 

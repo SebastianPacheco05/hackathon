@@ -21,7 +21,7 @@ Responsabilidades principales:
 """
 
 
-# Todas las categorías (tab_categories + conteo de productos activos en tab_products)
+# Todas las categorías (tab_categorias + conteo de productos activos en tab_productos)
 def get_categories(db: Session):
     """
     Lista todas las categorías con conteo de productos activos.
@@ -32,19 +32,19 @@ def get_categories(db: Session):
     try:
         query = text("""
         SELECT
-            c.id,
-            c.name,
-            c.slug,
-            c.parent_id,
-            c.is_active,
-            c.is_active AS ind_activo,
+            c.id_categoria        AS id,
+            c.nom_categoria       AS name,
+            c.slug_categoria      AS slug,
+            c.id_categoria_padre  AS parent_id,
+            c.ind_activo          AS is_active,
+            c.ind_activo,
             c.usr_insert,
             c.fec_insert,
             c.usr_update,
             c.fec_update,
-            (SELECT COUNT(*) FROM tab_products p
-             WHERE p.category_id = c.id AND p.is_active = true)::int AS productos_count
-        FROM tab_categories c
+            (SELECT COUNT(*) FROM tab_productos p
+             WHERE p.id_categoria = c.id_categoria AND p.ind_activo = true)::int AS productos_count
+        FROM tab_categorias c
         """)
         result = db.execute(query)
         return result.mappings().all()
@@ -58,21 +58,21 @@ def get_categories_roots(db: Session):
     try:
         query = text("""
         SELECT
-            c.id,
-            c.name,
-            c.slug,
-            c.parent_id,
-            c.is_active,
-            c.is_active AS ind_activo,
+            c.id_categoria        AS id,
+            c.nom_categoria       AS name,
+            c.slug_categoria      AS slug,
+            c.id_categoria_padre  AS parent_id,
+            c.ind_activo          AS is_active,
+            c.ind_activo,
             c.usr_insert,
             c.fec_insert,
             c.usr_update,
             c.fec_update,
-            (SELECT COUNT(*) FROM tab_products p
-             WHERE p.category_id = c.id AND p.is_active = true)::int AS productos_count
-        FROM tab_categories c
-        WHERE c.parent_id IS NULL
-        ORDER BY c.name
+            (SELECT COUNT(*) FROM tab_productos p
+             WHERE p.id_categoria = c.id_categoria AND p.ind_activo = true)::int AS productos_count
+        FROM tab_categorias c
+        WHERE c.id_categoria_padre IS NULL
+        ORDER BY c.nom_categoria
         """)
         result = db.execute(query)
         return result.mappings().all()
@@ -86,21 +86,21 @@ def get_categories_lines(db: Session):
     try:
         query = text("""
         SELECT
-            c.id,
-            c.name,
-            c.slug,
-            c.parent_id,
-            c.is_active,
-            c.is_active AS ind_activo,
+            c.id_categoria        AS id,
+            c.nom_categoria       AS name,
+            c.slug_categoria      AS slug,
+            c.id_categoria_padre  AS parent_id,
+            c.ind_activo          AS is_active,
+            c.ind_activo,
             c.usr_insert,
             c.fec_insert,
             c.usr_update,
             c.fec_update,
-            (SELECT COUNT(*) FROM tab_products p
-             WHERE p.category_id = c.id AND p.is_active = true)::int AS productos_count
-        FROM tab_categories c
-        WHERE c.parent_id IN (SELECT id FROM tab_categories WHERE parent_id IS NULL)
-        ORDER BY c.name
+            (SELECT COUNT(*) FROM tab_productos p
+             WHERE p.id_categoria = c.id_categoria AND p.ind_activo = true)::int AS productos_count
+        FROM tab_categorias c
+        WHERE c.id_categoria_padre IN (SELECT id_categoria FROM tab_categorias WHERE id_categoria_padre IS NULL)
+        ORDER BY c.nom_categoria
         """)
         result = db.execute(query)
         return result.mappings().all()
@@ -114,24 +114,24 @@ def get_categories_sublines(db: Session):
     try:
         query = text("""
         SELECT
-            c.id,
-            c.name,
-            c.slug,
-            c.parent_id,
-            c.is_active,
-            c.is_active AS ind_activo,
+            c.id_categoria        AS id,
+            c.nom_categoria       AS name,
+            c.slug_categoria      AS slug,
+            c.id_categoria_padre  AS parent_id,
+            c.ind_activo          AS is_active,
+            c.ind_activo,
             c.usr_insert,
             c.fec_insert,
             c.usr_update,
             c.fec_update,
-            (SELECT COUNT(*) FROM tab_products p
-             WHERE p.category_id = c.id AND p.is_active = true)::int AS productos_count
-        FROM tab_categories c
-        WHERE c.parent_id IN (
-            SELECT id FROM tab_categories 
-            WHERE parent_id IN (SELECT id FROM tab_categories WHERE parent_id IS NULL)
+            (SELECT COUNT(*) FROM tab_productos p
+             WHERE p.id_categoria = c.id_categoria AND p.ind_activo = true)::int AS productos_count
+        FROM tab_categorias c
+        WHERE c.id_categoria_padre IN (
+            SELECT id_categoria FROM tab_categorias
+            WHERE id_categoria_padre IN (SELECT id_categoria FROM tab_categorias WHERE id_categoria_padre IS NULL)
         )
-        ORDER BY c.name
+        ORDER BY c.nom_categoria
         """)
         result = db.execute(query)
         return result.mappings().all()
@@ -139,26 +139,26 @@ def get_categories_sublines(db: Session):
         db.rollback()
         raise Exception(f"Error al obtener sublíneas: {str(e)}")
 
-# Una categoría específica (tab_categories)
+# Una categoría específica (tab_categorias)
 def get_category(db: Session, category_id: Decimal):
     """Obtiene una categoría por ID con su conteo de productos activos."""
     try:
         query = text("""
         SELECT
-            c.id,
-            c.name,
-            c.slug,
-            c.parent_id,
-            c.is_active,
-            c.is_active AS ind_activo,
+            c.id_categoria        AS id,
+            c.nom_categoria       AS name,
+            c.slug_categoria      AS slug,
+            c.id_categoria_padre  AS parent_id,
+            c.ind_activo          AS is_active,
+            c.ind_activo,
             c.usr_insert,
             c.fec_insert,
             c.usr_update,
             c.fec_update,
-            (SELECT COUNT(*) FROM tab_products p
-             WHERE p.category_id = c.id AND p.is_active = true)::int AS productos_count
-        FROM tab_categories c
-        WHERE c.id = :category_id
+            (SELECT COUNT(*) FROM tab_productos p
+             WHERE p.id_categoria = c.id_categoria AND p.ind_activo = true)::int AS productos_count
+        FROM tab_categorias c
+        WHERE c.id_categoria = :category_id
         """)
         result = db.execute(query, {"category_id": category_id})
         return result.mappings().first()
@@ -296,18 +296,18 @@ def get_category_attributes(db: Session, category_id: Decimal):
     try:
         query = text("""
             SELECT
-                ca.id,
-                ca.category_id,
-                ca.attribute_id,
-                ca.is_required,
-                ca.is_filterable,
-                a.name AS attribute_name,
-                a.data_type,
-                COALESCE(a.has_predefined_values, FALSE) AS has_predefined_values
-            FROM tab_category_attributes ca
-            JOIN tab_attributes a ON a.id = ca.attribute_id
-            WHERE ca.category_id = :category_id
-            ORDER BY a.name
+                ca.id_atributo_categoria    AS id,
+                ca.id_categoria             AS category_id,
+                ca.id_atributo              AS attribute_id,
+                ca.ind_obligatorio          AS is_required,
+                ca.ind_filtrable            AS is_filterable,
+                a.nom_atributo              AS attribute_name,
+                a.tipo_dato                 AS data_type,
+                COALESCE(a.ind_valores_predefinidos, FALSE) AS has_predefined_values
+            FROM tab_atributos_categoria ca
+            JOIN tab_atributos a ON a.id_atributo = ca.id_atributo
+            WHERE ca.id_categoria = :category_id
+            ORDER BY a.nom_atributo
         """)
         result = db.execute(query, {"category_id": category_id})
         return result.mappings().all()
@@ -332,10 +332,11 @@ def get_category_attributes_with_values(db: Session, category_id: Decimal):
             return [{"values": [], **a} for a in attrs]
         placeholders = ", ".join(f":id{i}" for i in range(len(ids_with_values)))
         values_q = text(f"""
-            SELECT id, attribute_id, value, hex_color, sort_order
-            FROM tab_attribute_values
-            WHERE attribute_id IN ({placeholders}) AND is_active = TRUE
-            ORDER BY attribute_id, sort_order, id
+            SELECT id_valor_atributo AS id, id_atributo AS attribute_id,
+                   valor AS value, color_hex AS hex_color, orden AS sort_order
+            FROM tab_valores_atributo
+            WHERE id_atributo IN ({placeholders}) AND ind_activo = TRUE
+            ORDER BY id_atributo, orden, id_valor_atributo
         """)
         params = {f"id{i}": aid for i, aid in enumerate(ids_with_values)}
         values_rows = db.execute(values_q, params).mappings().all()
@@ -363,17 +364,18 @@ def set_category_attributes(db: Session, category_id: Decimal, items: list, usr:
     - operación de reemplazo total para simplificar sincronización frontend-backend.
     """
     try:
-        delete_q = text("DELETE FROM tab_category_attributes WHERE category_id = :category_id")
+        delete_q = text("DELETE FROM tab_atributos_categoria WHERE id_categoria = :category_id")
         db.execute(delete_q, {"category_id": category_id})
         if not items:
             db.commit()
             return
         # Obtener siguiente id (evitar conflicto con múltiples inserts)
-        max_q = text("SELECT COALESCE(MAX(id), 0) AS mx FROM tab_category_attributes")
+        max_q = text("SELECT COALESCE(MAX(id_atributo_categoria), 0) AS mx FROM tab_atributos_categoria")
         row = db.execute(max_q).fetchone()
         next_id = int(row[0]) + 1 if row else 1
         insert_q = text("""
-            INSERT INTO tab_category_attributes (id, category_id, attribute_id, is_required, is_filterable, usr_insert)
+            INSERT INTO tab_atributos_categoria
+                (id_atributo_categoria, id_categoria, id_atributo, ind_obligatorio, ind_filtrable, usr_insert)
             VALUES (:id, :category_id, :attribute_id, :is_required, :is_filterable, :usr_insert)
         """)
         for i, item in enumerate(items):

@@ -62,13 +62,13 @@ def get_alerts(db: Session) -> list[str]:
 
         stock_q = text("""
             WITH product_stock AS (
-                SELECT p.id,
-                    COALESCE(SUM(c.stock), 0)::BIGINT AS stock_total
-                FROM tab_products p
-                LEFT JOIN tab_product_variant_groups g ON g.product_id = p.id
-                LEFT JOIN tab_product_variant_combinations c ON c.group_id = g.id AND c.is_active = TRUE
-                WHERE p.is_active = TRUE
-                GROUP BY p.id
+                SELECT p.id_producto,
+                    COALESCE(SUM(c.cant_stock), 0)::BIGINT AS stock_total
+                FROM tab_productos p
+                LEFT JOIN tab_grupos_variante_producto g ON g.id_producto = p.id_producto
+                LEFT JOIN tab_combinaciones_variante_producto c ON c.id_grupo_variante = g.id_grupo_variante AND c.ind_activo = TRUE
+                WHERE p.ind_activo = TRUE
+                GROUP BY p.id_producto
             )
             SELECT
                 COUNT(*) FILTER (WHERE stock_total > 0 AND stock_total <= 10) AS stock_bajo,

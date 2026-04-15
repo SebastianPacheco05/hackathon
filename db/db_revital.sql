@@ -12,6 +12,9 @@ DROP VIEW IF EXISTS vw_descuentos_canjeables;
 DROP VIEW IF EXISTS vw_top_productos_vendidos;
 DROP VIEW IF EXISTS vw_resumen_ventas_categoria;
 DROP VIEW IF EXISTS vw_kpis_disponibles;
+DROP VIEW IF EXISTS vw_dashboards_usuarios_completo;
+DROP VIEW IF EXISTS vw_widgets_con_valores;
+DROP VIEW IF EXISTS vw_alertas_kpi_activas;
 
 -- Nivel 4: dependencias cruzadas (inventario, carrito, órdenes, favoritos, compras, estadísticas)
 DROP TABLE IF EXISTS tab_movimientos_inventario;
@@ -42,6 +45,7 @@ DROP TABLE IF EXISTS tab_widgets_dashboard;
 DROP TABLE IF EXISTS tab_dashboards_usuarios;
 DROP TABLE IF EXISTS tab_valores_kpi_cache;
 DROP TABLE IF EXISTS tab_kpis_maestros;
+DROP TABLE IF EXISTS tab_tipos_kpi;
 DROP TABLE IF EXISTS tab_usuarios;
 
 -- Nivel 1: catálogo (español — esquema actual)
@@ -618,7 +622,7 @@ CREATE TABLE IF NOT EXISTS tab_carrito_productos (
     fec_insert              TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     usr_update              DECIMAL(10),
     fec_update              TIMESTAMP WITHOUT TIME ZONE,
-    CONSTRAINT uq_carrito_producto UNIQUE (id_carrito, id_combinacion_variante),
+    CONSTRAINT uq_carrito_producto UNIQUE (id_carrito, id_combinacion_variante)
     -- PK definida arriba (sin autogeneración)
 );
 CREATE INDEX IF NOT EXISTS idx_carrito_productos_carrito ON tab_carrito_productos(id_carrito);

@@ -65,7 +65,7 @@ BEGIN
         d.val_porce_descuento,
         d.val_monto_descuento,
         d.aplica_a,
-        d.product_id_aplica,
+        d.id_producto_aplica,
         d.id_marca_aplica,
         d.min_valor_pedido,
         d.ind_es_para_cumpleanos,
@@ -185,7 +185,7 @@ BEGIN
             -- Calcular total del carrito con el canje recién creado
             SELECT fun_calcular_total_carrito(
                 p_id_usuario, 
-                NULL, -- session_id 
+                NULL, -- id_sesion
                 v_id_canje -- aplicar el canje recién creado
             ) INTO v_calculo_carrito;
             

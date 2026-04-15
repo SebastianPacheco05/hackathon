@@ -2,8 +2,8 @@
 Servicio para CRUD de atributos y valores predefinidos.
 
 Cubre:
-- `tab_attributes`: definición de atributos (tipo, nombre, flags).
-- `tab_attribute_values`: valores permitidos por atributo.
+- `tab_atributos`: definición de atributos (tipo, nombre, flags).
+- `tab_valores_atributo`: valores permitidos por atributo.
 
 Reglas principales:
 - unicidad de nombres por atributo/valor,
@@ -22,6 +22,25 @@ from schemas.attribute_schema import (
 )
 
 VALID_DATA_TYPES = ("text", "number", "boolean")
+
+# Mapa: campo Pydantic → columna real en tab_atributos
+_ATTR_COL_MAP = {
+    "name": "nom_atributo",
+    "data_type": "tipo_dato",
+    "has_predefined_values": "ind_valores_predefinidos",
+    "usr_update": "usr_update",
+    "fec_update": "fec_update",
+}
+
+# Mapa: campo Pydantic → columna real en tab_valores_atributo
+_VAL_COL_MAP = {
+    "value": "valor",
+    "hex_color": "color_hex",
+    "sort_order": "orden",
+    "is_active": "ind_activo",
+    "usr_update": "usr_update",
+    "fec_update": "fec_update",
+}
 
 
 def _table_exists(db: Session, table_name: str) -> bool:
@@ -43,9 +62,11 @@ def get_all(db: Session):
     """
     try:
         q = text("""
-            SELECT id, name, data_type, has_predefined_values, usr_insert, fec_insert, usr_update, fec_update
-            FROM tab_attributes
-            ORDER BY name
+            SELECT id_atributo AS id, nom_atributo AS name, tipo_dato AS data_type,
+                   ind_valores_predefinidos AS has_predefined_values,
+                   usr_insert, fec_insert, usr_update, fec_update
+            FROM tab_atributos
+            ORDER BY nom_atributo
         """)
         result = db.execute(q)
         return result.mappings().all()
@@ -58,9 +79,11 @@ def get_by_id(db: Session, id_attr: Decimal):
     """Obtiene un atributo por su ID."""
     try:
         q = text("""
-            SELECT id, name, data_type, has_predefined_values, usr_insert, fec_insert, usr_update, fec_update
-            FROM tab_attributes
-            WHERE id = :id
+            SELECT id_atributo AS id, nom_atributo AS name, tipo_dato AS data_type,
+                   ind_valores_predefinidos AS has_predefined_values,
+                   usr_insert, fec_insert, usr_update, fec_update
+            FROM tab_atributos
+            WHERE id_atributo = :id
         """)
         result = db.execute(q, {"id": id_attr})
         return result.mappings().first()
@@ -87,15 +110,15 @@ def create(db: Session, attr: AttributeCreate, usr_insert: Decimal):
     try:
         _validate_data_type(attr.data_type)
         existing = db.execute(
-            text("SELECT 1 FROM tab_attributes WHERE LOWER(TRIM(name)) = LOWER(TRIM(:name))"),
+            text("SELECT 1 FROM tab_atributos WHERE LOWER(TRIM(nom_atributo)) = LOWER(TRIM(:name))"),
             {"name": attr.name}
         ).first()
         if existing:
             raise ValueError("Ya existe un atributo con ese nombre")
-        next_id = db.execute(text("SELECT COALESCE(MAX(id), 0) + 1 FROM tab_attributes")).scalar()
+        next_id = db.execute(text("SELECT COALESCE(MAX(id_atributo), 0) + 1 FROM tab_atributos")).scalar()
         db.execute(
             text("""
-                INSERT INTO tab_attributes (id, name, data_type, has_predefined_values, usr_insert)
+                INSERT INTO tab_atributos (id_atributo, nom_atributo, tipo_dato, ind_valores_predefinidos, usr_insert)
                 VALUES (:id, :name, :data_type, :has_predefined_values, :usr_insert)
             """),
             {
@@ -136,17 +159,19 @@ def update(db: Session, id_attr: Decimal, attr: AttributeUpdate, usr_update: Dec
             _validate_data_type(updates["data_type"])
         if "name" in updates:
             existing = db.execute(
-                text("SELECT 1 FROM tab_attributes WHERE LOWER(TRIM(name)) = LOWER(TRIM(:name)) AND id != :id"),
+                text("SELECT 1 FROM tab_atributos WHERE LOWER(TRIM(nom_atributo)) = LOWER(TRIM(:name)) AND id_atributo != :id"),
                 {"name": updates["name"], "id": id_attr}
             ).first()
             if existing:
                 raise ValueError("Ya existe un atributo con ese nombre")
-        set_clause = ", ".join(f"{k} = :{k}" for k in updates)
-        updates["id"] = id_attr
-        updates["usr_update"] = usr_update
+        # Traducir campos Pydantic → columnas DB
+        db_updates = {_ATTR_COL_MAP.get(k, k): v for k, v in updates.items()}
+        set_clause = ", ".join(f"{col} = :{col}" for col in db_updates)
+        db_updates["id_atributo"] = id_attr
+        db_updates["usr_update"] = usr_update
         db.execute(
-            text(f"UPDATE tab_attributes SET {set_clause}, usr_update = :usr_update WHERE id = :id"),
-            updates
+            text(f"UPDATE tab_atributos SET {set_clause}, usr_update = :usr_update WHERE id_atributo = :id_atributo"),
+            db_updates
         )
         db.commit()
     except ValueError:
@@ -162,13 +187,13 @@ def delete(db: Session, id_attr: Decimal):
     Elimina atributo si no está referenciado.
 
     Bloquea borrado cuando hay uso en:
-    - categorías (`tab_category_attributes`),
-    - modelo actual de variantes (`tab_product_variant_groups/combinations`),
+    - categorías (`tab_atributos_categoria`),
+    - modelo actual de variantes (`tab_grupos_variante_producto/combinations`),
     - modelo legacy (`tab_product_variant_attributes`).
     """
     try:
         attr_row = db.execute(
-            text("SELECT name FROM tab_attributes WHERE id = :id"),
+            text("SELECT nom_atributo AS name FROM tab_atributos WHERE id_atributo = :id"),
             {"id": id_attr},
         ).first()
         if not attr_row:
@@ -176,19 +201,19 @@ def delete(db: Session, id_attr: Decimal):
 
         attr_name = str(attr_row[0] or "").strip()
         ref_ca = db.execute(
-            text("SELECT 1 FROM tab_category_attributes WHERE attribute_id = :id LIMIT 1"),
+            text("SELECT 1 FROM tab_atributos_categoria WHERE id_atributo = :id LIMIT 1"),
             {"id": id_attr}
         ).first()
         if ref_ca:
             raise ValueError("No se puede eliminar: el atributo está asignado a categorías")
 
         # Modelo actual (variant_groups/combinations)
-        if _table_exists(db, "tab_product_variant_groups"):
+        if _table_exists(db, "tab_grupos_variante_producto"):
             ref_vg = db.execute(
                 text("""
                     SELECT 1
-                    FROM tab_product_variant_groups
-                    WHERE LOWER(TRIM(dominant_attribute)) = LOWER(TRIM(:attr_name))
+                    FROM tab_grupos_variante_producto
+                    WHERE LOWER(TRIM(nom_atributo_dominante)) = LOWER(TRIM(:attr_name))
                     LIMIT 1
                 """),
                 {"attr_name": attr_name},
@@ -196,12 +221,12 @@ def delete(db: Session, id_attr: Decimal):
             if ref_vg:
                 raise ValueError("No se puede eliminar: el atributo está en uso como atributo dominante en variantes")
 
-        if _table_exists(db, "tab_product_variant_combinations"):
+        if _table_exists(db, "tab_combinaciones_variante_producto"):
             ref_vc = db.execute(
                 text("""
                     SELECT 1
-                    FROM tab_product_variant_combinations
-                    WHERE attributes ? :attr_key
+                    FROM tab_combinaciones_variante_producto
+                    WHERE atributos ? :attr_key
                     LIMIT 1
                 """),
                 {"attr_key": str(id_attr)},
@@ -217,7 +242,7 @@ def delete(db: Session, id_attr: Decimal):
             ).first()
             if ref_pva:
                 raise ValueError("No se puede eliminar: el atributo tiene valores en variantes")
-        db.execute(text("DELETE FROM tab_attributes WHERE id = :id"), {"id": id_attr})
+        db.execute(text("DELETE FROM tab_atributos WHERE id_atributo = :id"), {"id": id_attr})
         db.commit()
     except ValueError:
         db.rollback()
@@ -228,19 +253,21 @@ def delete(db: Session, id_attr: Decimal):
 
 
 # ---------------------------------------------------------------------------
-# Attribute values (tab_attribute_values)
+# Attribute values (tab_valores_atributo)
 # ---------------------------------------------------------------------------
 
 
 def get_values_by_attribute_id(db: Session, attribute_id: Decimal):
-    """Lista valores de un atributo, ordenados por `sort_order` e `id`."""
+    """Lista valores de un atributo, ordenados por `orden` e `id`."""
     try:
         q = text("""
-            SELECT id, attribute_id, value, hex_color, sort_order, is_active,
+            SELECT id_valor_atributo AS id, id_atributo AS attribute_id,
+                   valor AS value, color_hex AS hex_color, orden AS sort_order,
+                   ind_activo AS is_active,
                    usr_insert, fec_insert, usr_update, fec_update
-            FROM tab_attribute_values
-            WHERE attribute_id = :attribute_id
-            ORDER BY sort_order, id
+            FROM tab_valores_atributo
+            WHERE id_atributo = :attribute_id
+            ORDER BY orden, id_valor_atributo
         """)
         result = db.execute(q, {"attribute_id": attribute_id})
         return result.mappings().all()
@@ -252,7 +279,7 @@ def get_values_by_attribute_id(db: Session, attribute_id: Decimal):
 def _ensure_attribute_has_predefined_values(db: Session, attribute_id: Decimal) -> None:
     """Garantiza que el atributo admita valores predefinidos antes de crear valores."""
     row = db.execute(
-        text("SELECT has_predefined_values FROM tab_attributes WHERE id = :id"),
+        text("SELECT ind_valores_predefinidos AS has_predefined_values FROM tab_atributos WHERE id_atributo = :id"),
         {"id": attribute_id}
     ).first()
     if not row:
@@ -278,17 +305,18 @@ def create_value(
         _ensure_attribute_has_predefined_values(db, attribute_id)
         existing = db.execute(
             text("""
-                SELECT 1 FROM tab_attribute_values
-                WHERE attribute_id = :aid AND LOWER(TRIM(value)) = LOWER(TRIM(:val))
+                SELECT 1 FROM tab_valores_atributo
+                WHERE id_atributo = :aid AND LOWER(TRIM(valor)) = LOWER(TRIM(:val))
             """),
             {"aid": attribute_id, "val": payload.value}
         ).first()
         if existing:
             raise ValueError("Ya existe un valor con ese nombre en este atributo")
-        next_id = db.execute(text("SELECT COALESCE(MAX(id), 0) + 1 FROM tab_attribute_values")).scalar()
+        next_id = db.execute(text("SELECT COALESCE(MAX(id_valor_atributo), 0) + 1 FROM tab_valores_atributo")).scalar()
         db.execute(
             text("""
-                INSERT INTO tab_attribute_values (id, attribute_id, value, hex_color, sort_order, is_active, usr_insert)
+                INSERT INTO tab_valores_atributo
+                    (id_valor_atributo, id_atributo, valor, color_hex, orden, ind_activo, usr_insert)
                 VALUES (:id, :attribute_id, :value, :hex_color, :sort_order, :is_active, :usr_insert)
             """),
             {
@@ -327,7 +355,7 @@ def update_value(
     """
     try:
         row = db.execute(
-            text("SELECT id FROM tab_attribute_values WHERE id = :vid AND attribute_id = :aid"),
+            text("SELECT id_valor_atributo FROM tab_valores_atributo WHERE id_valor_atributo = :vid AND id_atributo = :aid"),
             {"vid": value_id, "aid": attribute_id}
         ).first()
         if not row:
@@ -338,8 +366,8 @@ def update_value(
         if "value" in updates:
             existing = db.execute(
                 text("""
-                    SELECT 1 FROM tab_attribute_values
-                    WHERE attribute_id = :aid AND LOWER(TRIM(value)) = LOWER(TRIM(:val)) AND id != :vid
+                    SELECT 1 FROM tab_valores_atributo
+                    WHERE id_atributo = :aid AND LOWER(TRIM(valor)) = LOWER(TRIM(:val)) AND id_valor_atributo != :vid
                 """),
                 {"aid": attribute_id, "val": updates["value"], "vid": value_id}
             ).first()
@@ -348,13 +376,15 @@ def update_value(
             updates["value"] = updates["value"].strip()
         if "hex_color" in updates and updates["hex_color"] is not None:
             updates["hex_color"] = updates["hex_color"].strip() or None
-        set_clause = ", ".join(f"{k} = :{k}" for k in updates)
-        updates["id"] = value_id
-        updates["attribute_id"] = attribute_id
-        updates["usr_update"] = usr_update
+        # Traducir campos Pydantic → columnas DB
+        db_updates = {_VAL_COL_MAP.get(k, k): v for k, v in updates.items()}
+        set_clause = ", ".join(f"{col} = :{col}" for col in db_updates)
+        db_updates["id_valor_atributo"] = value_id
+        db_updates["id_atributo"] = attribute_id
+        db_updates["usr_update"] = usr_update
         db.execute(
-            text(f"UPDATE tab_attribute_values SET {set_clause}, usr_update = :usr_update WHERE id = :id AND attribute_id = :attribute_id"),
-            updates
+            text(f"UPDATE tab_valores_atributo SET {set_clause}, usr_update = :usr_update WHERE id_valor_atributo = :id_valor_atributo AND id_atributo = :id_atributo"),
+            db_updates
         )
         db.commit()
     except ValueError:
@@ -370,17 +400,17 @@ def delete_value(db: Session, attribute_id: Decimal, value_id: Decimal) -> None:
     Elimina un valor de atributo cuando no está en uso.
 
     Bloquea borrado si está referenciado por:
-    - `tab_product_variant_groups` (valor dominante),
-    - `tab_product_variant_combinations` (JSON attributes),
+    - `tab_grupos_variante_producto` (valor dominante),
+    - `tab_combinaciones_variante_producto` (JSON attributes),
     - `tab_product_variant_attributes` legacy.
     """
     try:
         row = db.execute(
             text("""
-                SELECT av.id, av.value, a.name
-                FROM tab_attribute_values av
-                JOIN tab_attributes a ON a.id = av.attribute_id
-                WHERE av.id = :vid AND av.attribute_id = :aid
+                SELECT av.id_valor_atributo AS id, av.valor AS value, a.nom_atributo AS name
+                FROM tab_valores_atributo av
+                JOIN tab_atributos a ON a.id_atributo = av.id_atributo
+                WHERE av.id_valor_atributo = :vid AND av.id_atributo = :aid
             """),
             {"vid": value_id, "aid": attribute_id}
         ).first()
@@ -391,13 +421,13 @@ def delete_value(db: Session, attribute_id: Decimal, value_id: Decimal) -> None:
         attribute_name = str(row[2] or "").strip()
 
         # Modelo actual (variant_groups/combinations)
-        if _table_exists(db, "tab_product_variant_groups"):
+        if _table_exists(db, "tab_grupos_variante_producto"):
             ref_vg = db.execute(
                 text("""
                     SELECT 1
-                    FROM tab_product_variant_groups
-                    WHERE LOWER(TRIM(dominant_attribute)) = LOWER(TRIM(:attr_name))
-                      AND LOWER(TRIM(dominant_value)) = LOWER(TRIM(:value_text))
+                    FROM tab_grupos_variante_producto
+                    WHERE LOWER(TRIM(nom_atributo_dominante)) = LOWER(TRIM(:attr_name))
+                      AND LOWER(TRIM(valor_atributo_dominante)) = LOWER(TRIM(:value_text))
                     LIMIT 1
                 """),
                 {"attr_name": attribute_name, "value_text": value_text},
@@ -405,12 +435,12 @@ def delete_value(db: Session, attribute_id: Decimal, value_id: Decimal) -> None:
             if ref_vg:
                 raise ValueError("No se puede eliminar: el valor está en uso como valor dominante en variantes")
 
-        if _table_exists(db, "tab_product_variant_combinations"):
+        if _table_exists(db, "tab_combinaciones_variante_producto"):
             ref_vc = db.execute(
                 text("""
                     SELECT 1
-                    FROM tab_product_variant_combinations
-                    WHERE LOWER(TRIM(COALESCE(attributes->>:attr_key, ''))) = LOWER(TRIM(:value_text))
+                    FROM tab_combinaciones_variante_producto
+                    WHERE LOWER(TRIM(COALESCE(atributos->>:attr_key, ''))) = LOWER(TRIM(:value_text))
                     LIMIT 1
                 """),
                 {"attr_key": str(attribute_id), "value_text": value_text},
@@ -427,7 +457,7 @@ def delete_value(db: Session, attribute_id: Decimal, value_id: Decimal) -> None:
             if ref:
                 raise ValueError("No se puede eliminar: el valor está en uso en variantes de producto")
         db.execute(
-            text("DELETE FROM tab_attribute_values WHERE id = :vid AND attribute_id = :aid"),
+            text("DELETE FROM tab_valores_atributo WHERE id_valor_atributo = :vid AND id_atributo = :aid"),
             {"vid": value_id, "aid": attribute_id}
         )
         db.commit()

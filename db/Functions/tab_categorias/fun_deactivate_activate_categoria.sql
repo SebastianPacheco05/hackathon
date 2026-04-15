@@ -1,6 +1,6 @@
 /*
  * Activa o desactiva una categoría y en cascada todas sus subcategorías (árbol)
- * y todos los productos en esas categorías. Usa tabla tab_categories.
+ * y todos los productos en esas categorías. Usa tabla tab_categorias.
  */
 CREATE OR REPLACE FUNCTION fun_deactivate_activate_categoria(
     p_id_categoria DECIMAL,
@@ -13,7 +13,7 @@ DECLARE
     v_count_productos INT := 0;
     v_accion TEXT;
 BEGIN
-    SELECT is_active INTO v_estado_actual FROM tab_categories WHERE id = p_id_categoria;
+    SELECT ind_activo INTO v_estado_actual FROM tab_categorias WHERE id_categoria = p_id_categoria;
     IF v_estado_actual IS NULL THEN
         RETURN 'Error: Categoría no encontrada';
     END IF;
@@ -24,22 +24,22 @@ BEGIN
     v_accion := CASE WHEN p_activar THEN 'activada' ELSE 'desactivada' END;
 
     WITH RECURSIVE tree AS (
-        SELECT id FROM tab_categories WHERE id = p_id_categoria
+        SELECT id_categoria FROM tab_categorias WHERE id_categoria = p_id_categoria
         UNION ALL
-        SELECT c.id FROM tab_categories c
-        INNER JOIN tree t ON c.parent_id = t.id
+        SELECT c.id_categoria FROM tab_categorias c
+        INNER JOIN tree t ON c.id_categoria_padre = t.id_categoria
     )
-    UPDATE tab_categories SET is_active = p_activar, usr_update = p_usr_operacion, fec_update = CURRENT_TIMESTAMP
-    WHERE id IN (SELECT id FROM tree);
+    UPDATE tab_categorias SET ind_activo = p_activar, usr_update = p_usr_operacion, fec_update = CURRENT_TIMESTAMP
+    WHERE id_categoria IN (SELECT id_categoria FROM tree);
     GET DIAGNOSTICS v_count_categorias = ROW_COUNT;
 
     WITH RECURSIVE tree AS (
-        SELECT id FROM tab_categories WHERE id = p_id_categoria
+        SELECT id_categoria FROM tab_categorias WHERE id_categoria = p_id_categoria
         UNION ALL
-        SELECT c.id FROM tab_categories c INNER JOIN tree t ON c.parent_id = t.id
+        SELECT c.id_categoria FROM tab_categorias c INNER JOIN tree t ON c.id_categoria_padre = t.id_categoria
     )
-    UPDATE tab_products SET is_active = p_activar, usr_update = p_usr_operacion, fec_update = CURRENT_TIMESTAMP
-    WHERE category_id IN (SELECT id FROM tree);
+    UPDATE tab_productos SET ind_activo = p_activar, usr_update = p_usr_operacion, fec_update = CURRENT_TIMESTAMP
+    WHERE id_categoria IN (SELECT id_categoria FROM tree);
     GET DIAGNOSTICS v_count_productos = ROW_COUNT;
 
     RETURN FORMAT('Categoría %s exitosamente. Se actualizaron %s categoría(s) y %s producto(s).',

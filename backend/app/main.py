@@ -129,8 +129,12 @@ async def add_trace_id_middleware(request: Request, call_next):
 ALLOWED_CORS_ORIGINS = [
     # Producción
     "https://compralo.revital.cloud",
+    # Frontend local en dev (puerto por defecto)
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
     # Frontend local en dev
     "http://localhost:3001",
+    "http://127.0.0.1:3001",
     # Frontend dev expuesto por IP del servidor
     "http://46.225.94.64:3001",
     # Compatibilidad con puerto 3002 si se usa en algún entorno

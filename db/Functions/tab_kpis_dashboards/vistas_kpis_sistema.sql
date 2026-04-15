@@ -95,7 +95,7 @@ SELECT
     
     -- Información del usuario propietario
     u.nom_usuario as propietario,
-    u.email as email_propietario,
+    u.email_usuario as email_propietario,
     
     -- Estadísticas del dashboard
     COALESCE(stats.total_widgets, 0) as total_widgets,
@@ -253,7 +253,7 @@ SELECT
     
     -- Información del usuario
     u.nom_usuario,
-    u.email,
+    u.email_usuario as email_usuario,
     
     -- Valor actual del KPI (si existe en cache)
     c.valor_actual,

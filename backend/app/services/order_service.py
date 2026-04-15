@@ -557,7 +557,7 @@ def get_order_with_items(db: Session, id_orden: Decimal):
     """
     Devuelve la orden y un arreglo `items` con el snapshot de productos comprados
     (nombre, cantidad, precio unitario, total, variante y atributos). Usa variant_id
-    en tab_orden_productos y JOIN a tab_product_variant_combinations + tab_products.
+    en tab_orden_productos y JOIN a tab_combinaciones_variante_producto + tab_productos.
 
     Objetivo principal:
     - entregar detalle histórico estable, aunque productos/variantes cambien luego.
@@ -587,31 +587,31 @@ def get_order_with_items(db: Session, id_orden: Decimal):
             SELECT
                 op.id_orden,
                 op.id_orden_producto AS id_item,
-                p.id AS id_producto,
-                p.category_id AS id_categoria,
-                pv.id AS variant_id,
-                COALESCE(p.name, 'Producto') AS product_name,
+                p.id_producto AS id_producto,
+                p.id_categoria AS id_categoria,
+                pv.id_combinacion_variante AS variant_id,
+                COALESCE(p.nom_producto, 'Producto') AS product_name,
                 op.cant_producto AS quantity,
                 op.precio_unitario_orden AS unit_price,
                 op.subtotal AS total_price,
                 COALESCE(
-                    (SELECT pvi.image_url
-                     FROM tab_product_variant_images pvi
-                     WHERE pvi.variant_group_id = pv.group_id
-                     ORDER BY pvi.is_primary DESC NULLS LAST, pvi.sort_order NULLS LAST, pvi.id
+                    (SELECT pvi.url_imagen
+                     FROM tab_imagenes_grupo_variante pvi
+                     WHERE pvi.id_grupo_variante = pv.id_grupo_variante
+                     ORDER BY pvi.ind_principal DESC NULLS LAST, pvi.orden NULLS LAST, pvi.id_imagen_grupo_variante
                      LIMIT 1),
-                    (SELECT pvi.image_url
-                     FROM tab_product_variant_images pvi
-                     JOIN tab_product_variant_groups g2 ON g2.id = pvi.variant_group_id
-                     WHERE g2.product_id = p.id
-                     ORDER BY g2.id, pvi.is_primary DESC NULLS LAST, pvi.sort_order NULLS LAST, pvi.id
+                    (SELECT pvi.url_imagen
+                     FROM tab_imagenes_grupo_variante pvi
+                     JOIN tab_grupos_variante_producto g2 ON g2.id_grupo_variante = pvi.id_grupo_variante
+                     WHERE g2.id_producto = p.id_producto
+                     ORDER BY g2.id_grupo_variante, pvi.ind_principal DESC NULLS LAST, pvi.orden NULLS LAST, pvi.id_imagen_grupo_variante
                      LIMIT 1)
                 ) AS product_image,
-                COALESCE(op.opciones_elegidas, pv.attributes, '{}'::jsonb) AS opciones_elegidas
+                COALESCE(op.opciones_elegidas, pv.atributos, '{}'::jsonb) AS opciones_elegidas
             FROM tab_orden_productos op
-            LEFT JOIN tab_product_variant_combinations pv ON pv.id = op.variant_id
-            LEFT JOIN tab_product_variant_groups g ON g.id = pv.group_id
-            LEFT JOIN tab_products p ON p.id = g.product_id
+            LEFT JOIN tab_combinaciones_variante_producto pv ON pv.id_combinacion_variante = op.id_combinacion_variante
+            LEFT JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = pv.id_grupo_variante
+            LEFT JOIN tab_productos p ON p.id_producto = g.id_producto
             WHERE op.id_orden = :id_orden
             ORDER BY op.id_orden_producto ASC
             """

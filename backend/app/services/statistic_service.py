@@ -42,7 +42,7 @@ def get_products_stadistics(db:Session):
     
 def get_categories_stadistics(db:Session):
     """
-    Obtiene las estadísticas de las categorías (tab_estadisticas_categorias, modelo tab_categories).
+    Obtiene las estadísticas de las categorías (tab_estadisticas_categorias, modelo tab_categorias).
     """
     try:
         query = text("""

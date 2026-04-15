@@ -52,16 +52,16 @@ MAX_IMAGES_PER_VARIANT = 10
 
 # Portada en listados / PDP resumido: galería "Sin color" (panel admin), no la primera variante por id de grupo
 SQL_IMG_PRINCIPAL_COALESCE_P = """COALESCE(
-  (SELECT pvi.image_url FROM tab_product_variant_images pvi
-   INNER JOIN tab_product_variant_groups g ON g.id = pvi.variant_group_id
-   WHERE g.product_id = p.id
-     AND LOWER(TRIM(COALESCE(g.dominant_value, ''))) = 'sin color'
-   ORDER BY pvi.is_primary DESC NULLS LAST, pvi.sort_order NULLS LAST, pvi.id
+  (SELECT pvi.url_imagen FROM tab_imagenes_grupo_variante pvi
+   INNER JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = pvi.id_grupo_variante
+   WHERE g.id_producto = p.id_producto
+     AND LOWER(TRIM(COALESCE(g.valor_atributo_dominante, ''))) = 'sin color'
+   ORDER BY pvi.ind_principal DESC NULLS LAST, pvi.orden NULLS LAST, pvi.id_imagen_grupo_variante
    LIMIT 1),
-  (SELECT pvi.image_url FROM tab_product_variant_images pvi
-   INNER JOIN tab_product_variant_groups g ON g.id = pvi.variant_group_id
-   WHERE g.product_id = p.id
-   ORDER BY g.id, pvi.sort_order, pvi.id
+  (SELECT pvi.url_imagen FROM tab_imagenes_grupo_variante pvi
+   INNER JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = pvi.id_grupo_variante
+   WHERE g.id_producto = p.id_producto
+   ORDER BY g.id_grupo_variante, pvi.orden, pvi.id_imagen_grupo_variante
    LIMIT 1)
 )"""
 
@@ -77,7 +77,7 @@ def _normalize_for_search(text: Optional[str]) -> str:
 
 def _resolve_attribute_value_id(db: Session, attr_id: int, val) -> tuple:
     """
-    Si `val` es ID válido en `tab_attribute_values` para `attr_id`,
+    Si `val` es ID válido en `tab_valores_atributo` para `attr_id`,
     devuelve `(value_id, value_text)`, de lo contrario `(None, None)`.
     """
     try:
@@ -85,7 +85,7 @@ def _resolve_attribute_value_id(db: Session, attr_id: int, val) -> tuple:
     except (TypeError, ValueError):
         return (None, None)
     r = db.execute(
-        text("SELECT id, value FROM tab_attribute_values WHERE id = :vid AND attribute_id = :aid"),
+        text("SELECT id_valor_atributo AS id, valor AS value FROM tab_valores_atributo WHERE id_valor_atributo = :vid AND id_atributo = :aid"),
         {"vid": vint, "aid": attr_id}
     ).first()
     if r:
@@ -95,7 +95,7 @@ def _resolve_attribute_value_id(db: Session, attr_id: int, val) -> tuple:
 
 def _resolve_filter_value_display(db: Session, attribute_id: int, raw_value: str) -> str:
     """
-    Si raw_value es un ID de tab_attribute_values para este atributo, devuelve el texto (value);
+    Si raw_value es un ID de tab_valores_atributo para este atributo, devuelve el texto (value);
     si no, devuelve raw_value. Evita mostrar "5", "6", "8" en filtros cuando en JSONB se guardó el value_id.
     """
     if not raw_value or not str(raw_value).strip():
@@ -106,7 +106,7 @@ def _resolve_filter_value_display(db: Session, attribute_id: int, raw_value: str
     except (TypeError, ValueError):
         return s
     r = db.execute(
-        text("SELECT value FROM tab_attribute_values WHERE attribute_id = :aid AND id = :vid AND is_active = TRUE"),
+        text("SELECT valor AS value FROM tab_valores_atributo WHERE id_atributo = :aid AND id_valor_atributo = :vid AND ind_activo = TRUE"),
         {"aid": attribute_id, "vid": vint},
     ).first()
     return r[0] if r else s
@@ -115,7 +115,7 @@ def _resolve_filter_value_display(db: Session, attribute_id: int, raw_value: str
 def _filter_values_for_attribute(db: Session, attribute_id: int, display_values: List[str]) -> List[str]:
     """
     Para filtrar combinaciones por atributo: devuelve display_values más los value_id (como string)
-    que corresponden a esos textos en tab_attribute_values, para que coincidan tanto
+    que corresponden a esos textos en tab_valores_atributo, para que coincidan tanto
     combinaciones que guardaron "128GB" como las que guardaron "5".
     """
     out = list(display_values)
@@ -123,8 +123,8 @@ def _filter_values_for_attribute(db: Session, attribute_id: int, display_values:
         return out
     r = db.execute(
         text("""
-            SELECT id, value FROM tab_attribute_values
-            WHERE attribute_id = :aid AND is_active = TRUE AND value = ANY(:vals)
+            SELECT id_valor_atributo AS id, valor AS value FROM tab_valores_atributo
+            WHERE id_atributo = :aid AND ind_activo = TRUE AND valor = ANY(:vals)
         """),
         {"aid": attribute_id, "vals": display_values},
     ).mappings().all()
@@ -147,11 +147,11 @@ def _get_images_for_product_or_variant(
     if variant_id is not None:
         rows = db.execute(
             text("""
-                SELECT pvi.image_url, pvi.is_primary AS is_main, pvi.sort_order
-                FROM tab_product_variant_images pvi
-                JOIN tab_product_variant_combinations c ON c.group_id = pvi.variant_group_id
-                WHERE c.id = :vid
-                ORDER BY pvi.sort_order, pvi.id
+                SELECT pvi.url_imagen, pvi.ind_principal AS is_main, pvi.orden
+                FROM tab_imagenes_grupo_variante pvi
+                JOIN tab_combinaciones_variante_producto c ON c.id_grupo_variante = pvi.id_grupo_variante
+                WHERE c.id_combinacion_variante = :vid
+                ORDER BY pvi.orden, pvi.id
             """),
             {"vid": variant_id},
         ).mappings().all()
@@ -159,23 +159,23 @@ def _get_images_for_product_or_variant(
             return [{"image_url": r["image_url"], "is_main": bool(r.get("is_main")), "sort_order": int(r.get("sort_order") or 0)} for r in rows]
     rows = db.execute(
         text("""
-            SELECT pvi.image_url, pvi.is_primary AS is_main, pvi.sort_order
-            FROM tab_product_variant_images pvi
-            JOIN tab_product_variant_groups g ON g.id = pvi.variant_group_id
-            WHERE g.product_id = :pid
-            ORDER BY CASE WHEN LOWER(TRIM(COALESCE(g.dominant_value, ''))) = 'sin color' THEN 0 ELSE 1 END,
-                     g.id, pvi.sort_order, pvi.id
+            SELECT pvi.url_imagen, pvi.ind_principal AS is_main, pvi.orden
+            FROM tab_imagenes_grupo_variante pvi
+            JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = pvi.id_grupo_variante
+            WHERE g.id_producto = :pid
+            ORDER BY CASE WHEN LOWER(TRIM(COALESCE(g.valor_atributo_dominante, ''))) = 'sin color' THEN 0 ELSE 1 END,
+                     g.id_grupo_variante, pvi.orden, pvi.id
         """),
         {"pid": product_id},
     ).mappings().all()
     return [{"image_url": r["image_url"], "is_main": bool(r.get("is_main")), "sort_order": int(r.get("sort_order") or 0)} for r in rows]
 
 
-# Productos para admin (tab_products + variant_combinations/groups; usa fun_get_all_products_admin)
+# Productos para admin (tab_productos + variant_combinations/groups; usa fun_get_all_products_admin)
 def get_products_admin(db: Session, params: dict):
     """
     Obtiene todos los productos para el panel de administración usando
-    fun_get_all_products_admin (tab_products, variant_combinations/groups, tab_categories, tab_marcas).
+    fun_get_all_products_admin (tab_productos, variant_combinations/groups, tab_categorias, tab_marcas).
     Filtros por search, category_id, id_marca se aplican en Python (la función DB no los tiene).
 
     Salida:
@@ -223,13 +223,13 @@ def get_products_admin(db: Session, params: dict):
         # Estadísticas globales de stock: solo productos activos (los deshabilitados no cuentan como "sin stock")
         global_stock_q = text("""
             WITH product_stock AS (
-                SELECT p.id,
-                    COALESCE(SUM(c.stock), 0)::BIGINT AS stock_total
-                FROM tab_products p
-                LEFT JOIN tab_product_variant_groups g ON g.product_id = p.id
-                LEFT JOIN tab_product_variant_combinations c ON c.group_id = g.id AND c.is_active = TRUE
-                WHERE p.is_active = TRUE
-                GROUP BY p.id
+                SELECT p.id_producto,
+                    COALESCE(SUM(c.cant_stock), 0)::BIGINT AS stock_total
+                FROM tab_productos p
+                LEFT JOIN tab_grupos_variante_producto g ON g.id_producto = p.id_producto
+                LEFT JOIN tab_combinaciones_variante_producto c ON c.id_grupo_variante = g.id_grupo_variante AND c.ind_activo = TRUE
+                WHERE p.ind_activo = TRUE
+                GROUP BY p.id_producto
             )
             SELECT
                 COUNT(*) FILTER (WHERE stock_total > 10) AS en_stock,
@@ -277,12 +277,12 @@ def get_products_admin(db: Session, params: dict):
         # Total: desde la función de BD. Sin filtros, usar además COUNT(*) para asegurar total correcto de paginación
         total_original = int(rows[0].get("total_registros") or 0) if rows else 0
         if not has_filters:
-            cnt = db.execute(text("SELECT COUNT(*) AS n FROM tab_products")).scalar()
+            cnt = db.execute(text("SELECT COUNT(*) AS n FROM tab_productos")).scalar()
             total_from_count = int(cnt) if cnt is not None else 0
             if total_from_count > 0:
                 total_original = total_from_count
         elif total_original == 0 and rows:
-            cnt = db.execute(text("SELECT COUNT(*) AS n FROM tab_products")).scalar()
+            cnt = db.execute(text("SELECT COUNT(*) AS n FROM tab_productos")).scalar()
             total_original = int(cnt) if cnt is not None else total_original
 
         # Filtros adicionales en aplicación (search, category_id, line_id, subline_id)
@@ -299,7 +299,7 @@ def get_products_admin(db: Session, params: dict):
             rows = [r for r in rows if r.get("category_id") is not None and int(r.get("category_id")) == sid]
         elif line_id_param is not None:
             lid = int(line_id_param)
-            children_q = text("SELECT id FROM tab_categories WHERE parent_id = :pid")
+            children_q = text("SELECT id FROM tab_categorias WHERE parent_id = :pid")
             children_ids = [row["id"] for row in db.execute(children_q, {"pid": lid}).mappings().all()]
             allowed_ids = [lid] + children_ids
             rows = [
@@ -321,7 +321,7 @@ def get_products_admin(db: Session, params: dict):
                     if r.get("id_marca") is not None and int(r.get("id_marca")) == mid
                 ]
             else:
-                q_marca = text("SELECT id FROM tab_products WHERE id_marca = :mid")
+                q_marca = text("SELECT id FROM tab_productos WHERE id_marca = :mid")
                 allowed_ids = {
                     int(row["id"]) for row in db.execute(q_marca, {"mid": mid}).mappings().all()
                 }
@@ -337,7 +337,7 @@ def get_products_admin(db: Session, params: dict):
                     if r.get("id_proveedor") is not None and int(r.get("id_proveedor")) == pid
                 ]
             else:
-                q_prov = text("SELECT id FROM tab_products WHERE id_proveedor = :pid")
+                q_prov = text("SELECT id FROM tab_productos WHERE id_proveedor = :pid")
                 allowed_ids = {
                     int(row["id"]) for row in db.execute(q_prov, {"pid": pid}).mappings().all()
                 }
@@ -388,7 +388,7 @@ def get_products_admin(db: Session, params: dict):
 
 def get_products(db: Session):
     """
-    Obtiene todos los productos activos (tab_products + variant_combinations).
+    Obtiene todos los productos activos (tab_productos + variant_combinations).
     Usa fun_get_productos_activos y ratings desde tab_comentarios por product_id.
     """
     try:
@@ -416,12 +416,12 @@ def get_products(db: Session):
             return []
         # Parámetros nombrados para IN (PostgreSQL): ANY(:ids::decimal[])
         ratings_query = text("""
-            SELECT product_id,
+            SELECT id_producto AS product_id,
                    ROUND(AVG(calificacion)::numeric, 1)::float AS rating,
                    COUNT(*)::int AS review_count
             FROM tab_comentarios
-            WHERE ind_activo = TRUE AND calificacion IS NOT NULL AND product_id = ANY(:ids)
-            GROUP BY product_id
+            WHERE ind_activo = TRUE AND calificacion IS NOT NULL AND id_producto = ANY(:ids)
+            GROUP BY id_producto
         """)
         ratings_result = db.execute(ratings_query, {"ids": product_ids})
         ratings_by_id = {r["product_id"]: {"rating": float(r["rating"]) if r["rating"] is not None else None, "review_count": r["review_count"]} for r in ratings_result.mappings().all()}
@@ -454,10 +454,10 @@ def get_products(db: Session):
         db.rollback()
         raise Exception(f"Error al obtener productos: {str(e)}")
 
-# Un producto por slug o id (tab_products; sin línea/sublínea)
+# Un producto por slug o id (tab_productos; sin línea/sublínea)
 def get_product_by_slug_or_id(db: Session, slug_or_id: str):
     """
-    Obtiene un producto por slug (tab_products.slug) o por id.
+    Obtiene un producto por slug (tab_productos.slug) o por id.
     Acepta: slug (ej. "laptop-gamer"), id numérico ("5"), o formato legacy "5-null-null-5" (usa último número como id).
     """
     if not slug_or_id or not str(slug_or_id).strip():
@@ -481,40 +481,40 @@ def get_product(id_categoria: Decimal, id_linea: Decimal, id_sublinea: Decimal, 
 
 def get_product_by_slug(db: Session, slug: str):
     """
-    Obtiene un producto por tab_products.slug (misma forma que get_product_by_id).
+    Obtiene un producto por tab_productos.slug (misma forma que get_product_by_id).
     """
     if not slug or not slug.strip():
         return None
     try:
         query = text("""
             SELECT
-                p.id AS id_producto,
-                p.category_id AS id_categoria,
-                p.name AS nom_producto,
-                p.slug,
-                p.description,
+                p.id_producto AS id_producto,
+                p.id_categoria AS id_categoria,
+                p.nom_producto AS nom_producto,
+                p.slug_producto AS slug,
+                p.descripcion AS description,
                 p.id_marca,
                 p.id_proveedor,
-                p.is_active AS ind_activo,
+                p.ind_activo AS ind_activo,
                 p.usr_insert,
                 p.fec_insert,
                 p.usr_update,
                 p.fec_update,
-                c.name AS nom_categoria,
-                (SELECT MIN(cmb.price) FROM tab_product_variant_combinations cmb
-                 JOIN tab_product_variant_groups gr ON gr.id = cmb.group_id
-                 WHERE gr.product_id = p.id AND cmb.is_active = TRUE) AS val_precio,
-                (SELECT COALESCE(SUM(cmb.stock), 0) FROM tab_product_variant_combinations cmb
-                 JOIN tab_product_variant_groups gr ON gr.id = cmb.group_id
-                 WHERE gr.product_id = p.id AND cmb.is_active = TRUE) AS num_stock,
+                c.nom_categoria AS nom_categoria,
+                (SELECT MIN(cmb.precio) FROM tab_combinaciones_variante_producto cmb
+                 JOIN tab_grupos_variante_producto gr ON gr.id_grupo_variante = cmb.id_grupo_variante
+                 WHERE gr.id_producto = p.id_producto AND cmb.ind_activo = TRUE) AS val_precio,
+                (SELECT COALESCE(SUM(cmb.cant_stock), 0) FROM tab_combinaciones_variante_producto cmb
+                 JOIN tab_grupos_variante_producto gr ON gr.id_grupo_variante = cmb.id_grupo_variante
+                 WHERE gr.id_producto = p.id_producto AND cmb.ind_activo = TRUE) AS num_stock,
                 """ + SQL_IMG_PRINCIPAL_COALESCE_P + """ AS img_principal,
                 m.nom_marca,
                 pr.nom_proveedor
-            FROM tab_products p
-            JOIN tab_categories c ON c.id = p.category_id
+            FROM tab_productos p
+            JOIN tab_categorias c ON c.id_categoria = p.id_categoria
             LEFT JOIN tab_marcas m ON m.id_marca = p.id_marca
             LEFT JOIN tab_proveedores pr ON pr.id_proveedor = p.id_proveedor
-            WHERE p.slug = :slug AND p.is_active = TRUE
+            WHERE p.slug_producto = :slug AND p.ind_activo = TRUE
         """)
         row = db.execute(query, {"slug": slug.strip()}).mappings().first()
         if row is None:
@@ -529,7 +529,7 @@ def get_product_by_slug(db: Session, slug: str):
 
 
 def _row_to_product_dict(db: Session, row) -> dict:
-    """Convierte una fila a dict API: tab_products + price_min, stock_total, image_url (calculados)."""
+    """Convierte una fila a dict API: tab_productos + price_min, stock_total, image_url (calculados)."""
     product_dict = dict(row)
     product_id = product_dict.get("id_producto") or product_dict.get("id")
     product_dict["id"] = product_id
@@ -546,7 +546,7 @@ def _row_to_product_dict(db: Session, row) -> dict:
         text("""
             SELECT ROUND(AVG(calificacion)::numeric, 1)::float AS rating, COUNT(*)::int AS review_count
             FROM tab_comentarios
-            WHERE product_id = :product_id AND ind_activo = TRUE AND calificacion IS NOT NULL
+            WHERE id_producto = :product_id AND ind_activo = TRUE AND calificacion IS NOT NULL
         """),
         {"product_id": product_id},
     ).mappings().first()
@@ -580,40 +580,40 @@ def _build_product_images_dict(rows: List[dict]) -> Optional[dict]:
 
 def get_product_by_id(db: Session, product_id: Decimal):
     """
-    Obtiene un producto por tab_products.id usando el modelo variant_groups:
+    Obtiene un producto por tab_productos.id usando el modelo variant_groups:
     grupos dominantes (ej. Color), combinaciones (stock/SKU/attributes JSONB), imágenes por grupo.
     Respuesta compatible con PDP: variant_groups, variants (combinations), images_by_variant (por grupo), variant_options.
     """
     try:
         query = text("""
             SELECT
-                p.id AS id_producto,
-                p.category_id AS id_categoria,
-                p.name AS nom_producto,
-                p.slug,
-                p.description,
+                p.id_producto AS id_producto,
+                p.id_categoria AS id_categoria,
+                p.nom_producto AS nom_producto,
+                p.slug_producto AS slug,
+                p.descripcion AS description,
                 p.id_marca,
                 p.id_proveedor,
-                p.is_active AS ind_activo,
+                p.ind_activo AS ind_activo,
                 p.usr_insert,
                 p.fec_insert,
                 p.usr_update,
                 p.fec_update,
-                c.name AS nom_categoria,
-                (SELECT MIN(cmb.price) FROM tab_product_variant_combinations cmb
-                 JOIN tab_product_variant_groups gr ON gr.id = cmb.group_id
-                 WHERE gr.product_id = p.id AND cmb.is_active = TRUE) AS val_precio,
-                (SELECT COALESCE(SUM(cmb.stock), 0) FROM tab_product_variant_combinations cmb
-                 JOIN tab_product_variant_groups gr ON gr.id = cmb.group_id
-                 WHERE gr.product_id = p.id AND cmb.is_active = TRUE) AS num_stock,
+                c.nom_categoria AS nom_categoria,
+                (SELECT MIN(cmb.precio) FROM tab_combinaciones_variante_producto cmb
+                 JOIN tab_grupos_variante_producto gr ON gr.id_grupo_variante = cmb.id_grupo_variante
+                 WHERE gr.id_producto = p.id_producto AND cmb.ind_activo = TRUE) AS val_precio,
+                (SELECT COALESCE(SUM(cmb.cant_stock), 0) FROM tab_combinaciones_variante_producto cmb
+                 JOIN tab_grupos_variante_producto gr ON gr.id_grupo_variante = cmb.id_grupo_variante
+                 WHERE gr.id_producto = p.id_producto AND cmb.ind_activo = TRUE) AS num_stock,
                 """ + SQL_IMG_PRINCIPAL_COALESCE_P + """ AS img_principal,
                 m.nom_marca,
                 pr.nom_proveedor
-            FROM tab_products p
-            JOIN tab_categories c ON c.id = p.category_id
+            FROM tab_productos p
+            JOIN tab_categorias c ON c.id_categoria = p.id_categoria
             LEFT JOIN tab_marcas m ON m.id_marca = p.id_marca
             LEFT JOIN tab_proveedores pr ON pr.id_proveedor = p.id_proveedor
-            WHERE p.id = :product_id
+            WHERE p.id_producto = :product_id
         """)
         row = db.execute(query, {"product_id": product_id}).mappings().first()
         if row is None:
@@ -627,10 +627,11 @@ def get_product_by_id(db: Session, product_id: Decimal):
         # Grupos dominantes (ej. Color) con imágenes
         group_rows = db.execute(
             text("""
-                SELECT id, dominant_attribute, dominant_value, is_active
-                FROM tab_product_variant_groups
-                WHERE product_id = :pid AND is_active = TRUE
-                ORDER BY id
+                SELECT id_grupo_variante AS id, nom_atributo_dominante AS dominant_attribute,
+                       valor_atributo_dominante AS dominant_value, ind_activo AS is_active
+                FROM tab_grupos_variante_producto
+                WHERE id_producto = :pid AND ind_activo = TRUE
+                ORDER BY id_grupo_variante
             """),
             {"pid": product_id},
         ).mappings().all()
@@ -641,15 +642,15 @@ def get_product_by_id(db: Session, product_id: Decimal):
         if group_ids:
             img_rows = db.execute(
                 text("""
-                    SELECT variant_group_id, image_url, is_primary, sort_order
-                    FROM tab_product_variant_images
-                    WHERE variant_group_id = ANY(:gids)
-                    ORDER BY variant_group_id, sort_order, id
+                    SELECT id_grupo_variante, url_imagen AS image_url, ind_principal AS is_primary, orden AS sort_order
+                    FROM tab_imagenes_grupo_variante
+                    WHERE id_grupo_variante = ANY(:gids)
+                    ORDER BY id_grupo_variante, orden, id_imagen_grupo_variante
                 """),
                 {"gids": group_ids},
             ).mappings().all()
             for r in img_rows:
-                gid = str(int(r["variant_group_id"]))
+                gid = str(int(r["id_grupo_variante"]))
                 url = (r.get("image_url") or "").strip()
                 if not url:
                     continue
@@ -686,11 +687,11 @@ def get_product_by_id(db: Session, product_id: Decimal):
         # Combinaciones (variantes vendibles) con group_id, attributes JSONB y tipo_clasificacion
         combo_rows = db.execute(
             text("""
-                SELECT c.id, c.group_id, c.sku, c.price, c.stock, c.attributes, c.is_active, c.tipo_clasificacion
-                FROM tab_product_variant_combinations c
-                JOIN tab_product_variant_groups g ON g.id = c.group_id
-                WHERE g.product_id = :pid AND c.is_active = TRUE
-                ORDER BY c.group_id, c.id
+                SELECT c.id_combinacion_variante AS id, c.id_grupo_variante, c.cod_sku, c.precio, c.cant_stock, c.atributos AS attributes, c.ind_activo, c.tipo_clasificacion
+                FROM tab_combinaciones_variante_producto c
+                JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante
+                WHERE g.id_producto = :pid AND c.ind_activo = TRUE
+                ORDER BY c.id_grupo_variante, c.id_combinacion_variante
             """),
             {"pid": product_id},
         ).mappings().all()
@@ -726,7 +727,7 @@ def get_product_by_id(db: Session, product_id: Decimal):
             images_by_variant[str(v["id"])] = images_by_group.get(gid, [])
         result["images_by_variant"] = images_by_variant
 
-        # Resolver attribute_id y value_id a nombres legibles (tab_attributes, tab_attribute_values)
+        # Resolver attribute_id y value_id a nombres legibles (tab_atributos, tab_valores_atributo)
         attr_ids = set()
         val_ids = set()
         for v in result["variants"]:
@@ -749,14 +750,14 @@ def get_product_by_id(db: Session, product_id: Decimal):
         if attr_ids or val_ids:
             if attr_ids:
                 attr_rows = db.execute(
-                    text("SELECT id, name FROM tab_attributes WHERE id = ANY(:ids)"),
+                    text("SELECT id_atributo AS id, nom_atributo AS name FROM tab_atributos WHERE id_atributo = ANY(:ids)"),
                     {"ids": list(attr_ids)},
                 ).mappings().all()
                 for r in attr_rows:
                     attr_id_to_name[int(r["id"])] = (r.get("name") or "").strip() or f"Atributo {r['id']}"
             if val_ids:
                 val_rows = db.execute(
-                    text("SELECT id, value, hex_color FROM tab_attribute_values WHERE id = ANY(:ids)"),
+                    text("SELECT id_valor_atributo AS id, valor AS value, color_hex AS hex_color FROM tab_valores_atributo WHERE id_valor_atributo = ANY(:ids)"),
                     {"ids": list(val_ids)},
                 ).mappings().all()
                 for r in val_rows:
@@ -783,7 +784,7 @@ def get_product_by_id(db: Session, product_id: Decimal):
                         display_vals.add(str(val).strip().lower())
         if display_vals:
             hex_rows = db.execute(
-                text("SELECT LOWER(TRIM(value)) AS k, hex_color FROM tab_attribute_values WHERE LOWER(TRIM(value)) = ANY(:vals) AND hex_color IS NOT NULL AND hex_color != ''"),
+                text("SELECT LOWER(TRIM(value)) AS k, hex_color FROM tab_valores_atributo WHERE LOWER(TRIM(value)) = ANY(:vals) AND hex_color IS NOT NULL AND hex_color != ''"),
                 {"vals": list(display_vals)},
             ).mappings().all()
             for r in hex_rows:
@@ -1018,7 +1019,7 @@ def get_product_admin_detail(
     id_producto: Decimal,
 ):
     """
-    Obtiene un producto para edición en admin (tab_products). Se usa id_producto; el resto por compatibilidad de URL.
+    Obtiene un producto para edición en admin (tab_productos). Se usa id_producto; el resto por compatibilidad de URL.
     """
     row = get_product_by_id(db, id_producto)
     if not row:
@@ -1050,17 +1051,19 @@ def get_product_admin_detail(
 def get_product_with_variants_for_admin(db: Session, product_id: Decimal):
     """
     Devuelve producto + variant_groups (con imágenes) + combinaciones por grupo para el formulario de edición.
-    Modelo: tab_product_variant_groups, tab_product_variant_combinations, tab_product_variant_images.
+    Modelo: tab_grupos_variante_producto, tab_combinaciones_variante_producto, tab_imagenes_grupo_variante.
     """
     prod_row = db.execute(text("""
-        SELECT id, category_id, name, description, id_marca, id_proveedor, is_active
-        FROM tab_products WHERE id = :pid
+        SELECT id_producto AS id, id_categoria AS category_id, nom_producto AS name,
+               descripcion AS description, id_marca, id_proveedor, ind_activo AS is_active
+        FROM tab_productos WHERE id_producto = :pid
     """), {"pid": product_id}).mappings().first()
     if not prod_row:
         return None
     group_rows = db.execute(text("""
-        SELECT id, dominant_attribute, dominant_value, is_active
-        FROM tab_product_variant_groups WHERE product_id = :pid ORDER BY id
+        SELECT id_grupo_variante AS id, nom_atributo_dominante AS dominant_attribute,
+               valor_atributo_dominante AS dominant_value, ind_activo AS is_active
+        FROM tab_grupos_variante_producto WHERE id_producto = :pid ORDER BY id_grupo_variante
     """), {"pid": product_id}).mappings().all()
     def _int_or_none(v):
         if v is None: return None
@@ -1085,13 +1088,13 @@ def get_product_with_variants_for_admin(db: Session, product_id: Decimal):
         }
     group_ids = [int(r["id"]) for r in group_rows]
     img_rows = db.execute(text("""
-        SELECT variant_group_id, image_url, is_primary, sort_order
-        FROM tab_product_variant_images
-        WHERE variant_group_id = ANY(:gids) ORDER BY variant_group_id, sort_order, id
+        SELECT id_grupo_variante, url_imagen AS image_url, ind_principal AS is_primary, orden AS sort_order
+        FROM tab_imagenes_grupo_variante
+        WHERE id_grupo_variante = ANY(:gids) ORDER BY id_grupo_variante, orden, id_imagen_grupo_variante
     """), {"gids": group_ids}).mappings().all()
     images_by_group = {}
     for r in img_rows:
-        gid = str(int(r["variant_group_id"]))
+        gid = str(int(r["id_grupo_variante"]))
         url = (r.get("image_url") or "").strip()
         if not url:
             continue
@@ -1108,10 +1111,11 @@ def get_product_with_variants_for_admin(db: Session, product_id: Decimal):
         })
     # Solo combinaciones activas: las dadas de baja en edición (is_active=FALSE) no deben reaparecer al reabrir el formulario
     combo_rows = db.execute(text("""
-        SELECT id, group_id, sku, price, stock, attributes, is_active, tipo_clasificacion
-        FROM tab_product_variant_combinations
-        WHERE group_id = ANY(:gids) AND is_active = TRUE
-        ORDER BY group_id, id
+        SELECT id_combinacion_variante AS id, id_grupo_variante AS group_id, cod_sku AS sku,
+               precio AS price, cant_stock AS stock, attributes, ind_activo AS is_active, tipo_clasificacion
+        FROM tab_combinaciones_variante_producto
+        WHERE id_grupo_variante = ANY(:gids) AND ind_activo = TRUE
+        ORDER BY id_grupo_variante, id_combinacion_variante
     """), {"gids": group_ids}).mappings().all()
     combinations_by_group = {}
     variants_flat = []
@@ -1145,9 +1149,9 @@ def get_product_with_variants_for_admin(db: Session, product_id: Decimal):
             "tipo_clasificacion": c.get("tipo_clasificacion"),
         })
     # Resolver nombre del atributo dominante -> attribute_id (frontend usa attribute_id como clave; "dominant" solo para color)
-    # Usamos tab_attributes global para que funcione aunque el atributo no esté en tab_category_attributes
+    # Usamos tab_atributos global para que funcione aunque el atributo no esté en tab_atributos_categoria
     attr_rows = db.execute(text("""
-        SELECT id, LOWER(TRIM(name)) AS name FROM tab_attributes
+        SELECT id, LOWER(TRIM(name)) AS name FROM tab_atributos
     """)).mappings().all()
     name_to_attr_id = {(r.get("name") or "").strip(): int(r["id"]) for r in attr_rows if (r.get("name") or "").strip()}
     group_id_to_dominant_attr_name = {int(g["id"]): (g.get("dominant_attribute") or "").strip().lower() for g in group_rows}
@@ -1284,11 +1288,11 @@ async def create_product(db: Session, product: ProductCreate, image_files: Optio
                       SQL no devuelve el resultado esperado.
     """
     try:
-        # Validación con tab_categories
+        # Validación con tab_categorias
         category_id = product.id_categoria or getattr(product, "category_id", None)
         if category_id is not None:
             validate_cat = db.execute(text(
-                "SELECT 1 FROM tab_categories WHERE id = :cid"
+                "SELECT 1 FROM tab_categorias WHERE id_categoria = :cid"
             ), {"cid": category_id}).first()
             if not validate_cat:
                 raise Exception("La categoría seleccionada no existe")
@@ -1358,7 +1362,7 @@ async def create_product(db: Session, product: ProductCreate, image_files: Optio
                           if k not in ("description", "color", "Color", "size", "tamaño", "Tamaño") and v is not None and (not isinstance(v, str) or v.strip())}
             if attrs_json:
                 db.execute(
-                    text("UPDATE tab_product_variant_combinations SET attributes = attributes || CAST(:attrs AS JSONB), fec_update = NOW() WHERE id = :vid"),
+                    text("UPDATE tab_combinaciones_variante_producto SET atributos = atributos || CAST(:attrs AS JSONB), fec_update = NOW() WHERE id_combinacion_variante = :vid"),
                     {"attrs": json.dumps(attrs_json), "vid": variant_id},
                 )
                 db.commit()
@@ -1383,7 +1387,7 @@ def _get_dominant_attr_id(db: Session, attr_ids: set) -> Optional[int]:
     if not attr_ids:
         return None
     row = db.execute(
-        text("SELECT id FROM tab_attributes WHERE id = ANY(:ids) AND LOWER(TRIM(name)) = 'color' LIMIT 1"),
+        text("SELECT id_atributo AS id FROM tab_atributos WHERE id_atributo = ANY(:ids) AND LOWER(TRIM(nom_atributo)) = 'color' LIMIT 1"),
         {"ids": list(attr_ids)},
     ).first()
     if row:
@@ -1394,7 +1398,7 @@ def _get_dominant_attr_id(db: Session, attr_ids: set) -> Optional[int]:
 def _get_color_attribute_id(db: Session) -> Optional[int]:
     """Id del atributo 'Color' (dominante). Usado para opciones de filtro y filtrado por color."""
     row = db.execute(
-        text("SELECT id FROM tab_attributes WHERE LOWER(TRIM(name)) = 'color' LIMIT 1"),
+        text("SELECT id_atributo AS id FROM tab_atributos WHERE LOWER(TRIM(nom_atributo)) = 'color' LIMIT 1"),
     ).first()
     return int(row[0]) if row else None
 
@@ -1410,7 +1414,7 @@ def _get_attribute_name(db: Session, attr_id: Optional[int], default: str = "col
     if attr_id is None:
         return default
     row = db.execute(
-        text("SELECT name FROM tab_attributes WHERE id = :id LIMIT 1"),
+        text("SELECT nom_atributo AS name FROM tab_atributos WHERE id_atributo = :id LIMIT 1"),
         {"id": int(attr_id)},
     ).first()
     if row and row[0]:
@@ -1483,7 +1487,7 @@ def _group_variants_one_per_row(payload_variants: list, dominant_attr_id: Option
 def create_product_composite(db: Session, payload: ProductCreateComposite, usr_insert: Decimal):
     """
     Crea producto + variant_groups (dominante) + imágenes por grupo + combinaciones (stock/SKU/attributes JSONB).
-    Agrupa variantes por atributo 'color' (o primer atributo) y escribe en tab_product_variant_groups/combinations/images.
+    Agrupa variantes por atributo 'color' (o primer atributo) y escribe en tab_grupos_variante_producto/combinations/images.
     """
     try:
         p = payload.product
@@ -1502,11 +1506,11 @@ def create_product_composite(db: Session, payload: ProductCreateComposite, usr_i
             "SELECT fun_insert_producto(:p_category_id, :p_name, :p_description, :p_id_marca, :p_is_active, :p_usr_operacion, :p_id_proveedor)"
         )
         r1 = db.execute(q1, {
-            "p_category_id": p.category_id,
-            "p_name": p.name,
-            "p_description": p.description,
+            "p_category_id": p.id_categoria,
+            "p_name": p.nom_producto,
+            "p_description": p.descripcion,
             "p_id_marca": p.id_marca,
-            "p_is_active": p.is_active,
+            "p_is_active": p.ind_activo,
             "p_usr_operacion": usr_insert,
             "p_id_proveedor": getattr(p, "id_proveedor", None),
         })
@@ -1515,7 +1519,7 @@ def create_product_composite(db: Session, payload: ProductCreateComposite, usr_i
             raise Exception(str(msg) if msg else "Error al insertar producto")
         product_id = Decimal(str(msg).replace("OK:", "").strip())
 
-        # Nombre del atributo dominante: si existe en tab_attributes úsalo (ej. "Almacenamiento", "Tipo");
+        # Nombre del atributo dominante: si existe en tab_atributos úsalo (ej. "Almacenamiento", "Tipo");
         # si no, caer en "color" por compatibilidad con datos antiguos.
         dominant_attr_name = _get_attribute_name(db, dominant_attr_id, default="color")
         product_image_urls_create = getattr(payload, "image_urls", None) or []
@@ -1625,11 +1629,11 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
             )
         """), {
             "p_id": product_id,
-            "p_category_id": p.category_id,
-            "p_name": p.name,
-            "p_description": p.description,
+            "p_category_id": p.id_categoria,
+            "p_name": p.nom_producto,
+            "p_description": p.descripcion,
             "p_id_marca": p.id_marca,
-            "p_is_active": p.is_active,
+            "p_is_active": p.ind_activo,
             "p_usr_operacion": usr_update,
             "p_id_proveedor": getattr(p, "id_proveedor", None),
         })
@@ -1640,44 +1644,44 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
         # No eliminar variantes/grupos que estén referenciados por órdenes o carritos activos.
         # De lo contrario, falla por FK (tab_orden_productos.variant_id / tab_carrito_productos.variant_id -> combinations.id).
         locked_group_rows = db.execute(text("""
-            SELECT DISTINCT g.id
-            FROM tab_product_variant_groups g
-            JOIN tab_product_variant_combinations c ON c.group_id = g.id
-            WHERE g.product_id = :pid
+            SELECT DISTINCT g.id_grupo_variante
+            FROM tab_grupos_variante_producto g
+            JOIN tab_combinaciones_variante_producto c ON c.id_grupo_variante = g.id_grupo_variante
+            WHERE g.id_producto = :pid
               AND (
-                    EXISTS (SELECT 1 FROM tab_orden_productos op WHERE op.variant_id = c.id)
-                 OR EXISTS (SELECT 1 FROM tab_carrito_productos cp WHERE cp.variant_id = c.id)
+                    EXISTS (SELECT 1 FROM tab_orden_productos op WHERE op.id_combinacion_variante = c.id_combinacion_variante)
+                 OR EXISTS (SELECT 1 FROM tab_carrito_productos cp WHERE cp.id_combinacion_variante = c.id_combinacion_variante)
               )
         """), {"pid": product_id}).fetchall()
         locked_group_ids = [int(r[0]) for r in locked_group_rows if r and r[0] is not None]
 
         db.execute(text("""
-            DELETE FROM tab_product_variant_images
-            WHERE variant_group_id IN (
-                SELECT id FROM tab_product_variant_groups
-                WHERE product_id = :pid
-                  AND id <> ALL(:locked_ids)
+            DELETE FROM tab_imagenes_grupo_variante
+            WHERE id_grupo_variante IN (
+                SELECT id_grupo_variante AS id FROM tab_grupos_variante_producto
+                WHERE id_producto = :pid
+                  AND id_grupo_variante <> ALL(:locked_ids)
             )
         """), {"pid": product_id, "locked_ids": locked_group_ids})
         db.execute(text("""
-            DELETE FROM tab_product_variant_combinations
-            WHERE id IN (
-                SELECT c.id
-                FROM tab_product_variant_combinations c
-                JOIN tab_product_variant_groups g ON g.id = c.group_id
-                WHERE g.product_id = :pid
-                  AND g.id <> ALL(:locked_ids)
-                  AND NOT EXISTS (SELECT 1 FROM tab_orden_productos op WHERE op.variant_id = c.id)
-                  AND NOT EXISTS (SELECT 1 FROM tab_carrito_productos cp WHERE cp.variant_id = c.id)
+            DELETE FROM tab_combinaciones_variante_producto
+            WHERE id_combinacion_variante IN (
+                SELECT c.id_combinacion_variante
+                FROM tab_combinaciones_variante_producto c
+                JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante
+                WHERE g.id_producto = :pid
+                  AND g.id_grupo_variante <> ALL(:locked_ids)
+                  AND NOT EXISTS (SELECT 1 FROM tab_orden_productos op WHERE op.id_combinacion_variante = c.id_combinacion_variante)
+                  AND NOT EXISTS (SELECT 1 FROM tab_carrito_productos cp WHERE cp.id_combinacion_variante = c.id_combinacion_variante)
             )
         """), {"pid": product_id, "locked_ids": locked_group_ids})
         db.execute(text("""
-            DELETE FROM tab_product_variant_groups g
-            WHERE g.product_id = :pid
-              AND g.id <> ALL(:locked_ids)
+            DELETE FROM tab_grupos_variante_producto g
+            WHERE g.id_producto = :pid
+              AND g.id_grupo_variante <> ALL(:locked_ids)
               AND NOT EXISTS (
-                    SELECT 1 FROM tab_product_variant_combinations c
-                    WHERE c.group_id = g.id
+                    SELECT 1 FROM tab_combinaciones_variante_producto c
+                    WHERE c.id_grupo_variante = g.id_grupo_variante
               )
         """), {"pid": product_id, "locked_ids": locked_group_ids})
 
@@ -1704,7 +1708,7 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
             if rg and not str(rg).strip().upper().startswith("ERROR"):
                 sin_color_gid = int(str(rg).replace("OK:", "").strip())
                 db.execute(
-                    text("DELETE FROM tab_product_variant_images WHERE variant_group_id = :gid"),
+                    text("DELETE FROM tab_imagenes_grupo_variante WHERE id_grupo_variante = :gid"),
                     {"gid": sin_color_gid},
                 )
                 seen_urls = set()
@@ -1734,7 +1738,7 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
             group_id = int(str(rg).replace("OK:", "").strip())
 
             db.execute(
-                text("DELETE FROM tab_product_variant_images WHERE variant_group_id = :gid"),
+                text("DELETE FROM tab_imagenes_grupo_variante WHERE id_grupo_variante = :gid"),
                 {"gid": group_id},
             )
             seen_urls = set()
@@ -1773,23 +1777,23 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
             # Combinaciones: borrar solo las no referenciadas (órdenes/carrito);
             # actualizar las referenciadas existentes; insertar el resto.
             db.execute(text("""
-                DELETE FROM tab_product_variant_combinations c
-                WHERE c.group_id = :gid
+                DELETE FROM tab_combinaciones_variante_producto c
+                WHERE c.id_grupo_variante = :gid
                   AND NOT EXISTS (
-                    SELECT 1 FROM tab_orden_productos op WHERE op.variant_id = c.id
+                    SELECT 1 FROM tab_orden_productos op WHERE op.id_combinacion_variante = c.id_combinacion_variante
                   )
                   AND NOT EXISTS (
-                    SELECT 1 FROM tab_carrito_productos cp WHERE cp.variant_id = c.id
+                    SELECT 1 FROM tab_carrito_productos cp WHERE cp.id_combinacion_variante = c.id_combinacion_variante
                   )
             """), {"gid": group_id})
             ref_rows = db.execute(text("""
-                SELECT c.id FROM tab_product_variant_combinations c
-                WHERE c.group_id = :gid
+                SELECT c.id_combinacion_variante AS id FROM tab_combinaciones_variante_producto c
+                WHERE c.id_grupo_variante = :gid
                   AND (
-                        EXISTS (SELECT 1 FROM tab_orden_productos op WHERE op.variant_id = c.id)
-                     OR EXISTS (SELECT 1 FROM tab_carrito_productos cp WHERE cp.variant_id = c.id)
+                        EXISTS (SELECT 1 FROM tab_orden_productos op WHERE op.id_combinacion_variante = c.id_combinacion_variante)
+                     OR EXISTS (SELECT 1 FROM tab_carrito_productos cp WHERE cp.id_combinacion_variante = c.id_combinacion_variante)
                   )
-                ORDER BY c.id
+                ORDER BY c.id_combinacion_variante
             """), {"gid": group_id}).fetchall()
             ref_ids = [int(r[0]) for r in ref_rows if r and r[0] is not None]
 
@@ -1815,22 +1819,22 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
                 if idx < len(ref_ids):
                     cid = ref_ids[idx]
                     prev_row = db.execute(
-                        text("SELECT stock, sku FROM tab_product_variant_combinations WHERE id = :cid"),
+                        text("SELECT cant_stock, cod_sku FROM tab_combinaciones_variante_producto WHERE id_combinacion_variante = :cid"),
                         {"cid": cid},
                     ).fetchone()
                     old_stock = int(prev_row[0] or 0) if prev_row else 0
                     new_stock = int(v.stock or 0)
                     db.execute(text("""
-                        UPDATE tab_product_variant_combinations
-                        SET sku = COALESCE(:sku, sku),
-                            price = :price,
-                            stock = :stock,
-                            attributes = CAST(:attrs AS JSONB),
-                            is_active = :active,
+                        UPDATE tab_combinaciones_variante_producto
+                        SET cod_sku = COALESCE(:sku, cod_sku),
+                            precio = :price,
+                            cant_stock = :stock,
+                            atributos = CAST(:attrs AS JSONB),
+                            ind_activo = :active,
                             tipo_clasificacion = :tipo_clasif,
                             usr_update = :usr,
                             fec_update = NOW()
-                        WHERE id = :cid
+                        WHERE id_combinacion_variante = :cid
                     """), {
                         "sku": sku_to_try,
                         "price": v.price,
@@ -1843,7 +1847,7 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
                     })
                     if new_stock == 0 and old_stock > 0:
                         pname_row = db.execute(
-                            text("SELECT name FROM tab_products WHERE id = :pid"),
+                            text("SELECT nom_producto FROM tab_productos WHERE id_producto = :pid"),
                             {"pid": product_id},
                         ).fetchone()
                         pname = str(pname_row[0] or "") if pname_row else ""
@@ -1861,7 +1865,7 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
                         and old_stock > LOW_STOCK_MAX
                     ):
                         pname_row = db.execute(
-                            text("SELECT name FROM tab_products WHERE id = :pid"),
+                            text("SELECT nom_producto FROM tab_productos WHERE id_producto = :pid"),
                             {"pid": product_id},
                         ).fetchone()
                         pname = str(pname_row[0] or "") if pname_row else ""
@@ -1901,9 +1905,9 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
 
             for j in range(len(variants_in_group), len(ref_ids)):
                 db.execute(text("""
-                    UPDATE tab_product_variant_combinations
-                    SET is_active = FALSE, usr_update = :usr, fec_update = NOW()
-                    WHERE id = :cid
+                    UPDATE tab_combinaciones_variante_producto
+                    SET ind_activo = FALSE, usr_update = :usr, fec_update = NOW()
+                    WHERE id_combinacion_variante = :cid
                 """), {"cid": ref_ids[j], "usr": usr_update})
 
         db.commit()
@@ -2088,7 +2092,7 @@ def set_product_active(
 #filter products
 def filter_products(db: Session, filters: ProductFilterParams) -> ProductFilterResponse:
     """
-    Filtra productos con fun_filter_products (tab_products, variant_combinations).
+    Filtra productos con fun_filter_products (tab_productos, variant_combinations).
     Opcionalmente filtra por atributos (combinations.attributes JSONB) en aplicación.
     """
     try:
@@ -2110,8 +2114,8 @@ def filter_products(db: Session, filters: ProductFilterParams) -> ProductFilterR
             "p_offset": filters.offset,
         }
         query = text("""
-            SELECT product_id, category_id, nom_categoria, nom_producto, slug_producto, description,
-                   id_marca, precio_min, precio_max, stock_total, img_principal, total_registros
+            SELECT id_producto AS product_id, id_categoria AS category_id, nom_categoria, nom_producto, slug_producto,
+                   descripcion AS description, id_marca, precio_min, precio_max, stock_total, img_principal, total_registros
             FROM fun_filter_products(
                 :p_category_id, :p_include_subcategories, :p_id_marca, :p_nombre_producto,
                 :p_precio_min, :p_precio_max, :p_solo_con_stock, :p_solo_en_oferta, :p_ordenar_por, :p_orden,
@@ -2121,7 +2125,7 @@ def filter_products(db: Session, filters: ProductFilterParams) -> ProductFilterR
         result = db.execute(query, params)
         rows = list(result.mappings().all())
 
-        # Filtro por atributos: Color por g.dominant_value; el resto por c.attributes->>attribute_id.
+        # Filtro por atributos: Color por g.valor_atributo_dominante; el resto por c.attributes->>attribute_id.
         if getattr(filters, "atributos", None) and filters.atributos:
             product_ids_with_attrs = None
             color_attr_id = _get_color_attribute_id(db)
@@ -2132,25 +2136,25 @@ def filter_products(db: Session, filters: ProductFilterParams) -> ProductFilterR
                 vals_expanded = _filter_values_for_attribute(db, aid_int, list(values))
                 if color_attr_id is not None and aid_int == color_attr_id:
                     q = text("""
-                        SELECT DISTINCT g.product_id
-                        FROM tab_product_variant_groups g
-                        JOIN tab_products p ON p.id = g.product_id
-                        WHERE g.is_active = TRUE AND p.is_active = TRUE
-                          AND g.dominant_value = ANY(:vals)
+                        SELECT DISTINCT g.id_producto
+                        FROM tab_grupos_variante_producto g
+                        JOIN tab_productos p ON p.id_producto = g.id_producto
+                        WHERE g.ind_activo = TRUE AND p.ind_activo = TRUE
+                          AND g.valor_atributo_dominante = ANY(:vals)
                     """)
                     r = db.execute(q, {"vals": vals_expanded})
                 else:
                     attr_key = str(aid_int)
                     q = text("""
-                        SELECT DISTINCT g.product_id
-                        FROM tab_product_variant_combinations c
-                        JOIN tab_product_variant_groups g ON g.id = c.group_id
-                        JOIN tab_products p ON p.id = g.product_id
-                        WHERE c.is_active = TRUE AND p.is_active = TRUE
-                          AND c.attributes->>:attr_key = ANY(:vals)
+                        SELECT DISTINCT g.id_producto
+                        FROM tab_combinaciones_variante_producto c
+                        JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante
+                        JOIN tab_productos p ON p.id_producto = g.id_producto
+                        WHERE c.ind_activo = TRUE AND p.ind_activo = TRUE
+                          AND c.atributos->>:attr_key = ANY(:vals)
                     """)
                     r = db.execute(q, {"attr_key": attr_key, "vals": vals_expanded})
-                ids = {x["product_id"] for x in r.mappings().all()}
+                ids = {x["id_producto"] for x in r.mappings().all()}
                 if product_ids_with_attrs is None:
                     product_ids_with_attrs = ids
                 else:
@@ -2162,10 +2166,10 @@ def filter_products(db: Session, filters: ProductFilterParams) -> ProductFilterR
         ratings_dict = {}
         if product_ids:
             rq = text("""
-                SELECT product_id, ROUND(AVG(calificacion)::numeric, 1)::float AS rating
+                SELECT id_producto AS product_id, ROUND(AVG(calificacion)::numeric, 1)::float AS rating
                 FROM tab_comentarios
-                WHERE ind_activo = TRUE AND calificacion IS NOT NULL AND product_id = ANY(:ids)
-                GROUP BY product_id
+                WHERE ind_activo = TRUE AND calificacion IS NOT NULL AND id_producto = ANY(:ids)
+                GROUP BY id_producto
             """)
             rres = db.execute(rq, {"ids": product_ids})
             ratings_dict = {r["product_id"]: r["rating"] for r in rres.mappings().all()}
@@ -2209,7 +2213,7 @@ def filter_products(db: Session, filters: ProductFilterParams) -> ProductFilterR
 
 def get_filter_stats(db: Session, filters: ProductFilterParams) -> ProductFilterStats:
     """
-    Estadísticas de productos que coinciden con los filtros (tab_products + variant_combinations).
+    Estadísticas de productos que coinciden con los filtros (tab_productos + variant_combinations).
     Usa la misma lógica que filter_products pero sin paginación para contar y agregar.
     """
     try:
@@ -2229,7 +2233,7 @@ def get_filter_stats(db: Session, filters: ProductFilterParams) -> ProductFilter
             "p_offset": 0,
         }
         query = text("""
-            SELECT product_id, category_id, nom_categoria, id_marca, precio_min, stock_total, total_registros
+            SELECT id_producto AS product_id, id_categoria AS category_id, nom_categoria, id_marca, precio_min, stock_total, total_registros
             FROM fun_filter_products(
                 :p_category_id, :p_include_subcategories, :p_id_marca, :p_nombre_producto,
                 :p_precio_min, :p_precio_max, :p_solo_con_stock, :p_solo_en_oferta, :p_ordenar_por, :p_orden,
@@ -2248,25 +2252,25 @@ def get_filter_stats(db: Session, filters: ProductFilterParams) -> ProductFilter
                 vals_expanded = _filter_values_for_attribute(db, aid_int, list(values))
                 if color_attr_id is not None and aid_int == color_attr_id:
                     q = text("""
-                        SELECT DISTINCT g.product_id
-                        FROM tab_product_variant_groups g
-                        JOIN tab_products p ON p.id = g.product_id
-                        WHERE g.is_active = TRUE AND p.is_active = TRUE
-                          AND g.dominant_value = ANY(:vals)
+                        SELECT DISTINCT g.id_producto
+                        FROM tab_grupos_variante_producto g
+                        JOIN tab_productos p ON p.id_producto = g.id_producto
+                        WHERE g.ind_activo = TRUE AND p.ind_activo = TRUE
+                          AND g.valor_atributo_dominante = ANY(:vals)
                     """)
                     r = db.execute(q, {"vals": vals_expanded})
                 else:
                     attr_key = str(aid_int)
                     q = text("""
-                        SELECT DISTINCT g.product_id
-                        FROM tab_product_variant_combinations c
-                        JOIN tab_product_variant_groups g ON g.id = c.group_id
-                        JOIN tab_products p ON p.id = g.product_id
-                        WHERE c.is_active = TRUE AND p.is_active = TRUE
-                          AND c.attributes->>:attr_key = ANY(:vals)
+                        SELECT DISTINCT g.id_producto
+                        FROM tab_combinaciones_variante_producto c
+                        JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante
+                        JOIN tab_productos p ON p.id_producto = g.id_producto
+                        WHERE c.ind_activo = TRUE AND p.ind_activo = TRUE
+                          AND c.atributos->>:attr_key = ANY(:vals)
                     """)
                     r = db.execute(q, {"attr_key": attr_key, "vals": vals_expanded})
-                ids = {x["product_id"] for x in r.mappings().all()}
+                ids = {x["id_producto"] for x in r.mappings().all()}
                 product_ids_with_attrs = ids if product_ids_with_attrs is None else (product_ids_with_attrs & ids)
             if product_ids_with_attrs is not None and product_ids_with_attrs:
                 rows = [r for r in rows if r.get("product_id") in product_ids_with_attrs]
@@ -2337,11 +2341,11 @@ def get_filter_options(db: Session, category_id: Optional[int] = None) -> dict:
 
         # Rango de precios desde combinaciones activas
         precios_query = text("""
-            SELECT MIN(c.price) AS precio_minimo, MAX(c.price) AS precio_maximo
-            FROM tab_product_variant_combinations c
-            JOIN tab_product_variant_groups g ON g.id = c.group_id
-            JOIN tab_products p ON p.id = g.product_id
-            WHERE c.is_active = TRUE AND p.is_active = TRUE
+            SELECT MIN(c.precio) AS precio_minimo, MAX(c.precio) AS precio_maximo
+            FROM tab_combinaciones_variante_producto c
+            JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante
+            JOIN tab_productos p ON p.id_producto = g.id_producto
+            WHERE c.ind_activo = TRUE AND p.ind_activo = TRUE
         """)
         precios = db.execute(precios_query).mappings().first()
         price_range = {
@@ -2354,8 +2358,8 @@ def get_filter_options(db: Session, category_id: Optional[int] = None) -> dict:
         if category_id is not None:
             attrs_query = text("""
                 SELECT a.id AS attribute_id, a.name AS attribute_name
-                FROM tab_attributes a
-                JOIN tab_category_attributes ca ON ca.attribute_id = a.id
+                FROM tab_atributos a
+                JOIN tab_atributos_categoria ca ON ca.attribute_id = a.id
                 WHERE ca.category_id = :category_id AND ca.is_filterable = TRUE
                 GROUP BY a.id, a.name
                 ORDER BY a.name
@@ -2366,15 +2370,15 @@ def get_filter_options(db: Session, category_id: Optional[int] = None) -> dict:
                 attr_id = int(a["attribute_id"])
                 attr_name = (a["attribute_name"] or "").strip().lower()
                 raw_values = []
-                # Color (atributo dominante) está en tab_product_variant_groups.dominant_value, no en combinations.attributes
+                # Color (atributo dominante) está en tab_grupos_variante_producto.dominant_value, no en combinations.attributes
                 if attr_name == "color" and color_attr_id is not None and attr_id == color_attr_id:
                     dom_query = text("""
-                        SELECT DISTINCT g.dominant_value AS value_text
-                        FROM tab_product_variant_groups g
-                        JOIN tab_products p ON p.id = g.product_id
-                        WHERE g.is_active = TRUE AND p.is_active = TRUE AND p.category_id = :category_id
-                          AND (g.dominant_value) IS NOT NULL AND trim(COALESCE(g.dominant_value, '')) != ''
-                          AND LOWER(TRIM(g.dominant_value)) != 'sin color'
+                        SELECT DISTINCT g.valor_atributo_dominante AS value_text
+                        FROM tab_grupos_variante_producto g
+                        JOIN tab_productos p ON p.id_producto = g.id_producto
+                        WHERE g.ind_activo = TRUE AND p.ind_activo = TRUE AND p.id_categoria = :category_id
+                          AND (g.valor_atributo_dominante) IS NOT NULL AND trim(COALESCE(g.valor_atributo_dominante, '')) != ''
+                          AND LOWER(TRIM(g.valor_atributo_dominante)) != 'sin color'
                         ORDER BY value_text
                     """)
                     raw_values = [
@@ -2384,19 +2388,19 @@ def get_filter_options(db: Session, category_id: Optional[int] = None) -> dict:
                 else:
                     attr_key = str(attr_id)
                     values_query = text("""
-                        SELECT DISTINCT c.attributes->>:attr_key AS value_text
-                        FROM tab_product_variant_combinations c
-                        JOIN tab_product_variant_groups g ON g.id = c.group_id
-                        JOIN tab_products p ON p.id = g.product_id
-                        WHERE c.is_active = TRUE AND p.is_active = TRUE AND p.category_id = :category_id
-                          AND (c.attributes->>:attr_key) IS NOT NULL AND trim(COALESCE(c.attributes->>:attr_key, '')) != ''
+                        SELECT DISTINCT c.atributos->>:attr_key AS value_text
+                        FROM tab_combinaciones_variante_producto c
+                        JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante
+                        JOIN tab_productos p ON p.id_producto = g.id_producto
+                        WHERE c.ind_activo = TRUE AND p.ind_activo = TRUE AND p.id_categoria = :category_id
+                          AND (c.atributos->>:attr_key) IS NOT NULL AND trim(COALESCE(c.atributos->>:attr_key, '')) != ''
                         ORDER BY value_text
                     """)
                     raw_values = [
                         str(r["value_text"]) for r in db.execute(values_query, {"attr_key": attr_key, "category_id": category_id}).mappings().all()
                         if r.get("value_text")
                     ]
-                # Resolver value_id -> texto (tab_attribute_values) para no mostrar "5", "6", "8" en la UI
+                # Resolver value_id -> texto (tab_valores_atributo) para no mostrar "5", "6", "8" en la UI
                 display_values = sorted(
                     {_resolve_filter_value_display(db, attr_id, v) for v in raw_values},
                     key=str.casefold,
@@ -2447,11 +2451,11 @@ def _serialize_tree(nodes):
 
 def get_filter_options_admin(db: Session) -> dict:
     """
-    Opciones de filtro para admin (tab_categories, tab_marcas, tab_proveedores, precios desde tab_product_variant_combinations).
+    Opciones de filtro para admin (tab_categorias, tab_marcas, tab_proveedores, precios desde tab_combinaciones_variante_producto).
     """
     try:
         categorias_query = text("""
-            SELECT id, name AS nom_categoria, parent_id FROM tab_categories ORDER BY name
+            SELECT id, name AS nom_categoria, parent_id FROM tab_categorias ORDER BY name
         """)
         categorias = db.execute(categorias_query).mappings().all()
 
@@ -2467,7 +2471,7 @@ def get_filter_options_admin(db: Session) -> dict:
 
         precios_query = text("""
             SELECT MIN(price) AS precio_minimo, MAX(price) AS precio_maximo
-            FROM tab_product_variant_combinations WHERE is_active = TRUE
+            FROM tab_combinaciones_variante_producto WHERE is_active = TRUE
         """)
         precios = db.execute(precios_query).mappings().first()
 

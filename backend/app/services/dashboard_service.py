@@ -277,23 +277,23 @@ def _get_best_sellers(db: Session, limit: int = 10) -> List[Dict[str, Any]]:
     Obtiene productos más vendidos consolidando por producto base.
 
     Join clave:
-    - `tab_orden_productos.variant_id` -> combinación de variante (`pv.id`).
+    - `tab_orden_productos.variant_id` -> combinación de variante (`pv.id_combinacion_variante`).
     - Se filtra catálogo activo y se ordena por unidades vendidas.
     """
     query = text("""
         SELECT 
-            p.id AS product_id,
-            p.name AS nom_producto,
+            p.id_producto AS product_id,
+            p.nom_producto AS nom_producto,
             """ + SQL_IMG_PRINCIPAL_COALESCE_P + """ AS image_url,
             COALESCE(SUM(op.cant_producto), 0) AS total_sold,
             COALESCE(SUM(op.subtotal), 0) AS total_revenue
-        FROM tab_products p
-        LEFT JOIN tab_product_variant_groups g ON g.product_id = p.id
-        LEFT JOIN tab_product_variant_combinations pv ON pv.group_id = g.id
-        LEFT JOIN tab_orden_productos op ON op.variant_id = pv.id
+        FROM tab_productos p
+        LEFT JOIN tab_grupos_variante_producto g ON g.id_producto = p.id_producto
+        LEFT JOIN tab_combinaciones_variante_producto pv ON pv.id_grupo_variante = g.id_grupo_variante
+        LEFT JOIN tab_orden_productos op ON op.id_combinacion_variante = pv.id_combinacion_variante
         LEFT JOIN tab_ordenes o ON op.id_orden = o.id_orden AND o.ind_estado = 2
-        WHERE p.is_active = TRUE
-        GROUP BY p.id, p.name
+        WHERE p.ind_activo = TRUE
+        GROUP BY p.id_producto, p.nom_producto
         HAVING COALESCE(SUM(op.cant_producto), 0) > 0
         ORDER BY total_sold DESC, total_revenue DESC
         LIMIT :limit

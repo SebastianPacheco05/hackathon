@@ -1,5 +1,5 @@
 /*
- * Elimina una categoría de la tabla tab_categories.
+ * Elimina una categoría de la tabla tab_categorias.
  * No permite eliminar si tiene hijas o productos asociados.
  */
 CREATE OR REPLACE FUNCTION fun_delete_categoria(p_id DECIMAL)
@@ -8,11 +8,11 @@ DECLARE
     v_children INT;
     v_products INT;
 BEGIN
-    IF p_id IS NULL OR NOT EXISTS (SELECT 1 FROM tab_categories WHERE id = p_id) THEN
+    IF p_id IS NULL OR NOT EXISTS (SELECT 1 FROM tab_categorias WHERE id = p_id) THEN
         RETURN json_build_object('success', false, 'message', 'La categoría no existe', 'id_categoria', p_id);
     END IF;
 
-    SELECT COUNT(1) INTO v_children FROM tab_categories WHERE parent_id = p_id;
+    SELECT COUNT(1) INTO v_children FROM tab_categorias WHERE id_categoria_padre = p_id;
     IF v_children > 0 THEN
         RETURN json_build_object(
             'success', false,
@@ -22,7 +22,7 @@ BEGIN
         );
     END IF;
 
-    SELECT COUNT(1) INTO v_products FROM tab_products WHERE category_id = p_id;
+    SELECT COUNT(1) INTO v_products FROM tab_productos WHERE id_categoria = p_id;
     IF v_products > 0 THEN
         RETURN json_build_object(
             'success', false,
@@ -32,9 +32,9 @@ BEGIN
         );
     END IF;
 
-    DELETE FROM tab_estadisticas_categorias WHERE category_id = p_id;
-    DELETE FROM tab_category_attributes WHERE category_id = p_id;
-    DELETE FROM tab_categories WHERE id = p_id;
+    DELETE FROM tab_estadisticas_categorias WHERE id_categoria = p_id;
+    DELETE FROM tab_atributos_categoria WHERE id_categoria = p_id;
+    DELETE FROM tab_categorias WHERE id = p_id;
 
     RETURN json_build_object('success', true, 'message', 'Categoría eliminada', 'id_categoria', p_id);
 EXCEPTION

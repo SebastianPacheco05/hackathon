@@ -2,17 +2,17 @@
  * EJEMPLOS DE USO: Sistema de Compras a Proveedores
  * 
  * DESCRIPCIÓN: Ejemplos prácticos de cómo usar el sistema completo de
- *              órdenes de compra a proveedores con actualización automática de stock.
+ *              órdenes de compra a proveedores con actualización automática de cant_stock.
  * 
  * COMPONENTES DEL SISTEMA:
  *   1. tab_orden_compra_proveedor (tabla unificada)
  *   2. fun_insert_orden_compra_proveedor() (inserción)
  *   3. fun_update_orden_compra_proveedor() (actualización)
- *   4. Triggers automáticos (validación + actualización stock)
+ *   4. Triggers automáticos (validación + actualización cant_stock)
  * 
  * FLUJO COMPLETO:
  *   Admin crea orden → Trigger valida producto → Se recibe mercancía → 
- *   Admin marca como recibido → Trigger actualiza stock automáticamente
+ *   Admin marca como recibido → Trigger actualiza cant_stock automáticamente
  * 
  * AUTOR: Sistema DB_Revital
  * FECHA: 2025
@@ -65,7 +65,7 @@ FROM tab_orden_compra_proveedor
 WHERE id_orden_compra = 1;  -- Usar el ID generado automáticamente
 
 -- PASO 3: Simular recepción de mercancía (marcar como recibido)
--- Esto activará el trigger que actualiza el stock automáticamente
+-- Esto activará el trigger que actualiza el cant_stock automáticamente
 SELECT fun_update_orden_compra_proveedor(
     1,           -- id_orden_compra
     NULL,        -- fec_esperada_entrega (sin cambio)
@@ -85,10 +85,10 @@ SELECT fun_update_orden_compra_proveedor(
 --   "estado_anterior": 1,
 --   "estado_nuevo": 3,
 --   "stock_sera_actualizado": true,
---   "nota_trigger": "El trigger actualizará automáticamente el stock del producto"
+--   "nota_trigger": "El trigger actualizará automáticamente el cant_stock del producto"
 -- }
 
--- PASO 4: Verificar que el stock se actualizó
+-- PASO 4: Verificar que el cant_stock se actualizó
 SELECT 
     id_categoria, id_linea, id_sublinea, id_producto,
     nom_producto,
@@ -155,7 +155,7 @@ SELECT fun_insert_producto(
     45.99,                                  -- precio
     1,                                      -- id_proveedor
     1,                                      -- id_marca
-    0,                                      -- stock inicial
+    0,                                      -- cant_stock inicial
     1                                       -- usr_operacion
 );
 
@@ -291,10 +291,10 @@ BEGIN
     RAISE NOTICE '   • Stock: Se actualiza automáticamente al marcar como recibido';
     RAISE NOTICE '';
     RAISE NOTICE '📊 Estados del producto:';
-    RAISE NOTICE '   1 = Solicitado → Sin efecto en stock';
-    RAISE NOTICE '   2 = Parcial    → Sin efecto en stock';
+    RAISE NOTICE '   1 = Solicitado → Sin efecto en cant_stock';
+    RAISE NOTICE '   2 = Parcial    → Sin efecto en cant_stock';
     RAISE NOTICE '   3 = Recibido   → ✅ ACTUALIZA STOCK (+cantidad_recibida)';
-    RAISE NOTICE '   4 = Cancelado  → Sin efecto en stock';
+    RAISE NOTICE '   4 = Cancelado  → Sin efecto en cant_stock';
     RAISE NOTICE '';
     RAISE NOTICE '💡 Para productos nuevos: Ejecutar fun_insert_producto() primero';
 END $$; 

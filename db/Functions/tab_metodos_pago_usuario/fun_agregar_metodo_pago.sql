@@ -26,15 +26,15 @@
  */
 CREATE OR REPLACE FUNCTION fun_agregar_metodo_pago(
     p_id_usuario tab_usuarios.id_usuario%TYPE,
-    p_provider_name tab_metodos_pago_usuario.provider_name%TYPE,
+    p_provider_name tab_metodos_pago_usuario.cod_proveedor_pago%TYPE,
     -- CAMBIO: Renombrado para alinearse con Wompi
-    p_provider_source_id tab_metodos_pago_usuario.provider_source_id%TYPE,
-    p_brand tab_metodos_pago_usuario.brand%TYPE,
-    p_last_four_digits tab_metodos_pago_usuario.last_four_digits%TYPE,
-    p_expiration_month tab_metodos_pago_usuario.expiration_month%TYPE,
-    p_expiration_year tab_metodos_pago_usuario.expiration_year%TYPE,
+    p_provider_source_id tab_metodos_pago_usuario.id_fuente_proveedor%TYPE,
+    p_brand tab_metodos_pago_usuario.marca_tarjeta%TYPE,
+    p_last_four_digits tab_metodos_pago_usuario.ultimos_cuatro_digitos%TYPE,
+    p_expiration_month tab_metodos_pago_usuario.mes_vencimiento%TYPE,
+    p_expiration_year tab_metodos_pago_usuario.ano_vencimiento%TYPE,
     -- AÑADIDO: Para guardar el titular de la tarjeta
-    p_card_holder tab_metodos_pago_usuario.card_holder%TYPE,
+    p_card_holder tab_metodos_pago_usuario.titular_tarjeta%TYPE,
     p_usr_operacion tab_usuarios.id_usuario%TYPE
 ) RETURNS JSON AS $$
 DECLARE
@@ -49,13 +49,13 @@ BEGIN
     -- INSERCIÓN
     INSERT INTO tab_metodos_pago_usuario (
         id_usuario,
-        provider_name,
-        provider_source_id, -- Columna actualizada
-        brand,
-        last_four_digits,
-        expiration_month,
-        expiration_year,
-        card_holder,        -- Columna añadida
+        cod_proveedor_pago,
+        id_fuente_proveedor,
+        marca_tarjeta,
+        ultimos_cuatro_digitos,
+        mes_vencimiento,
+        ano_vencimiento,
+        titular_tarjeta,
         usr_insert
     ) VALUES (
         p_id_usuario,
@@ -68,7 +68,7 @@ BEGIN
         p_card_holder,
         p_usr_operacion
     )
-    ON CONFLICT (id_usuario, provider_source_id, provider_name) DO NOTHING
+    ON CONFLICT (id_usuario, id_fuente_proveedor, cod_proveedor_pago) DO NOTHING
     RETURNING id_metodo_pago INTO v_id_metodo_pago;
 
     -- RESPUESTA
@@ -82,11 +82,11 @@ BEGIN
     -- Devolver el registro completo para usar en la API
     SELECT json_build_object(
         'id_metodo_pago', m.id_metodo_pago,
-        'provider_source_id', m.provider_source_id,
-        'brand', m.brand,
-        'last_four_digits', m.last_four_digits,
-        'card_holder', m.card_holder,
-        'is_default', m.is_default
+        'id_fuente_proveedor', m.id_fuente_proveedor,
+        'brand', m.marca_tarjeta,
+        'last_four_digits', m.ultimos_cuatro_digitos,
+        'card_holder', m.titular_tarjeta,
+        'is_default', m.ind_predeterminado
     ) INTO v_new_payment_method
     FROM tab_metodos_pago_usuario m WHERE m.id_metodo_pago = v_id_metodo_pago;
 

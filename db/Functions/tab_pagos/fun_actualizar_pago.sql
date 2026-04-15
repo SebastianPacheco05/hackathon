@@ -23,15 +23,15 @@
  */
 CREATE OR REPLACE FUNCTION fun_actualizar_pago(
     -- CAMBIO: Usamos el ID de transacción para buscar y actualizar.
-    p_provider_transaction_id tab_pagos.provider_transaction_id%TYPE,
-    p_status tab_pagos.status%TYPE,
-    p_status_detail tab_pagos.status_detail%TYPE,
+    p_provider_transaction_id tab_pagos.id_transaccion_proveedor%TYPE,
+    p_status tab_pagos.estado_pago%TYPE,
+    p_status_detail tab_pagos.detalle_estado_pago%TYPE,
     -- CAMBIO: Renombramos campos para ser más genéricos, como en la tabla
-    p_payment_method_type tab_pagos.payment_method_type%TYPE,
+    p_payment_method_type tab_pagos.tipo_medio_pago%TYPE,
     p_payment_method_extra JSONB,
-    p_fee_amount tab_pagos.fee_amount%TYPE,
-    p_net_received_amount tab_pagos.net_received_amount%TYPE,
-    p_provider_date_approved tab_pagos.provider_date_approved%TYPE,
+    p_fee_amount tab_pagos.monto_comision%TYPE,
+    p_net_received_amount tab_pagos.monto_neto_recibido%TYPE,
+    p_provider_date_approved tab_pagos.fec_aprobacion_proveedor%TYPE,
     p_raw_response JSONB,
     p_usr_operacion tab_usuarios.id_usuario%TYPE
 ) RETURNS JSON AS $$
@@ -39,27 +39,27 @@ DECLARE
     v_updated_rows INT;
 BEGIN
     -- VALIDACIONES
-    IF p_provider_payment_id IS NULL THEN
+    IF p_provider_transaction_id IS NULL THEN
         RETURN json_build_object('success', false, 'message', 'El ID de pago del proveedor es obligatorio.');
     END IF;
 
     -- ACTUALIZACIÓN
     UPDATE tab_pagos
     SET
-        status = p_status,
-        status_detail = p_status_detail,
-        payment_method_type = p_payment_method_type,
-        payment_method_extra = p_payment_method_extra,
-        fee_amount = p_fee_amount,
-        net_received_amount = p_net_received_amount,
-        provider_date_approved = p_provider_date_approved,
-        raw_response = p_raw_response,
+        estado_pago = p_status,
+        detalle_estado_pago = p_status_detail,
+        tipo_medio_pago = p_payment_method_type,
+        datos_extra_medio_pago = p_payment_method_extra,
+        monto_comision = p_fee_amount,
+        monto_neto_recibido = p_net_received_amount,
+        fec_aprobacion_proveedor = p_provider_date_approved,
+        respuesta_cruda = p_raw_response,
         estado_procesamiento = CASE WHEN p_status = 'APPROVED' THEN 'procesado' ELSE 'error' END,
         usr_update = p_usr_operacion,
         fec_update = NOW()
     WHERE
         -- Usamos el ID de transacción para encontrar el registro
-        provider_transaction_id = p_provider_transaction_id;
+        id_transaccion_proveedor = p_provider_transaction_id;
 
     GET DIAGNOSTICS v_updated_rows = ROW_COUNT;
 

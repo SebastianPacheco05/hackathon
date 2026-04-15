@@ -89,7 +89,7 @@ def get_comentaries_by_product(db: Session, product_id_or_slug: str):
             product_id = Decimal(s)
         else:
             row = db.execute(
-                text("SELECT id FROM tab_products WHERE slug = :slug AND is_active = TRUE LIMIT 1"),
+                text("SELECT id_producto FROM tab_productos WHERE slug_producto = :slug AND ind_activo = TRUE LIMIT 1"),
                 {"slug": s}
             ).first()
             if row:
@@ -99,7 +99,7 @@ def get_comentaries_by_product(db: Session, product_id_or_slug: str):
         query = text("""
             SELECT
                 c.id_comentario,
-                c.product_id AS id_producto,
+                c.id_producto,
                 c.id_usuario,
                 c.comentario,
                 c.calificacion,
@@ -109,7 +109,7 @@ def get_comentaries_by_product(db: Session, product_id_or_slug: str):
                 u.email_usuario
             FROM tab_comentarios c
             INNER JOIN tab_usuarios u ON c.id_usuario = u.id_usuario
-            WHERE c.product_id = :id_producto AND c.ind_activo = TRUE
+            WHERE c.id_producto = :id_producto AND c.ind_activo = TRUE
             ORDER BY c.fec_insert DESC
         """)
         result = db.execute(query, {"id_producto": product_id})
@@ -131,15 +131,15 @@ def get_testimonials_5_star(db: Session, limit: int = 3):
                 c.comentario,
                 c.calificacion,
                 c.fec_insert,
-                c.product_id AS id_producto,
+                c.id_producto,
                 u.nom_usuario,
                 u.ape_usuario,
-                p.name AS nom_producto,
-                p.slug AS producto_slug,
+                p.nom_producto,
+                p.slug_producto AS producto_slug,
                 """ + SQL_IMG_PRINCIPAL_COALESCE_P + """ AS img_producto
             FROM tab_comentarios c
             INNER JOIN tab_usuarios u ON c.id_usuario = u.id_usuario
-            LEFT JOIN tab_products p ON p.id = c.product_id
+            LEFT JOIN tab_productos p ON p.id_producto = c.id_producto
             WHERE c.calificacion >= 4 AND c.ind_activo = TRUE
             ORDER BY c.calificacion DESC, c.fec_insert DESC
             LIMIT :limit

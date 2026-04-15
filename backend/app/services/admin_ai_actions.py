@@ -268,8 +268,8 @@ def _execute_create_category(db: Session, params: dict, user_id: str | Decimal) 
         # Verificar si ya existe una categoría con ese nombre (case-insensitive).
         # Si hay parent_id, verificar dentro de ese nivel; si no, verificar en raíz.
         exists_q = text(
-            "SELECT 1 FROM tab_categories WHERE LOWER(name) = LOWER(:name) "
-            "AND (COALESCE(parent_id, 0) = COALESCE(:parent_id, 0)) LIMIT 1"
+            "SELECT 1 FROM tab_categorias WHERE LOWER(nom_categoria) = LOWER(:name) "
+            "AND (COALESCE(id_categoria_padre, 0) = COALESCE(:parent_id, 0)) LIMIT 1"
         )
         exists_params = {"name": name, "parent_id": parent_decimal}
         if db.execute(exists_q, exists_params).first():
@@ -655,13 +655,13 @@ def _execute_check_low_stock(db: Session, params: dict, user_id: str | Decimal) 
     try:
         q = text("""
             WITH product_stock AS (
-                SELECT p.id, p.name,
-                    COALESCE(SUM(c.stock), 0)::BIGINT AS stock_total
-                FROM tab_products p
-                LEFT JOIN tab_product_variant_groups g ON g.product_id = p.id
-                LEFT JOIN tab_product_variant_combinations c ON c.group_id = g.id AND c.is_active = TRUE
-                WHERE p.is_active = TRUE
-                GROUP BY p.id, p.name
+                SELECT p.id_producto AS id, p.nom_producto AS name,
+                    COALESCE(SUM(c.cant_stock), 0)::BIGINT AS stock_total
+                FROM tab_productos p
+                LEFT JOIN tab_grupos_variante_producto g ON g.id_producto = p.id_producto
+                LEFT JOIN tab_combinaciones_variante_producto c ON c.id_grupo_variante = g.id_grupo_variante AND c.ind_activo = TRUE
+                WHERE p.ind_activo = TRUE
+                GROUP BY p.id_producto, p.nom_producto
             )
             SELECT id, name, stock_total
             FROM product_stock
@@ -688,13 +688,13 @@ def _execute_get_top_stock_products(db: Session, params: dict, user_id: str | De
     try:
         q = text("""
             WITH product_stock AS (
-                SELECT p.id, p.name,
-                    COALESCE(SUM(c.stock), 0)::BIGINT AS stock_total
-                FROM tab_products p
-                LEFT JOIN tab_product_variant_groups g ON g.product_id = p.id
-                LEFT JOIN tab_product_variant_combinations c ON c.group_id = g.id AND c.is_active = TRUE
-                WHERE p.is_active = TRUE
-                GROUP BY p.id, p.name
+                SELECT p.id_producto AS id, p.nom_producto AS name,
+                    COALESCE(SUM(c.cant_stock), 0)::BIGINT AS stock_total
+                FROM tab_productos p
+                LEFT JOIN tab_grupos_variante_producto g ON g.id_producto = p.id_producto
+                LEFT JOIN tab_combinaciones_variante_producto c ON c.id_grupo_variante = g.id_grupo_variante AND c.ind_activo = TRUE
+                WHERE p.ind_activo = TRUE
+                GROUP BY p.id_producto, p.nom_producto
             )
             SELECT id, name, stock_total
             FROM product_stock
