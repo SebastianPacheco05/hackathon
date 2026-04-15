@@ -74,7 +74,7 @@ const Footer: React.FC<FooterProps> = ({ className = "", onNewsletterSubscribe }
                   <li key={index}>
                     <a 
                       href={link.href} 
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#ec2538] dark:hover:text-red-400 transition-colors duration-300 block py-1"
+                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-[#00B207] dark:hover:text-[#00B207] transition-colors duration-300 block py-1"
                     >
                       {link.label}
                     </a>

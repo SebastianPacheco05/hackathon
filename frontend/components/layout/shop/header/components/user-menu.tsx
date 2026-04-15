@@ -63,7 +63,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = "" }) => {
     return (
       <Link 
         href="/login" 
-        className="text-gray-700 dark:text-gray-300 cursor-pointer hover:text-[#ec2538] dark:hover:text-red-500 transition-colors duration-200 font-medium text-sm sm:text-base"
+        className="text-gray-700 dark:text-gray-300 cursor-pointer hover:text-[#00B207] dark:hover:text-[#00B207] transition-colors duration-200 font-medium text-sm sm:text-base"
       >
         Iniciar sesión
       </Link>
@@ -89,11 +89,11 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = "" }) => {
   // Obtener color de fondo para el avatar
   const getAvatarColor = () => {
     const colors = [
-      "bg-gradient-to-br from-[#ec2538] to-[#FF8C00]",
-      "bg-gradient-to-br from-[#FF8C00] to-[#fec806]",
-      "bg-gradient-to-br from-[#fec806] to-[#ec2538]",
-      "bg-gradient-to-br from-[#ec2538] to-[#fec806]",
-      "bg-gradient-to-br from-[#FF8C00] to-[#ec2538]"
+      "bg-gradient-to-br from-[#00B207] to-[#2ECC71]",
+      "bg-gradient-to-br from-[#34A853] to-[#7BC47F]",
+      "bg-gradient-to-br from-[#7BC47F] to-[#00B207]",
+      "bg-gradient-to-br from-[#00B207] to-[#7BC47F]",
+      "bg-gradient-to-br from-[#34A853] to-[#00B207]"
     ]
     const index = (user?.id_usuario || 0) % colors.length
     return colors[index]
@@ -160,7 +160,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = "" }) => {
               {/* Cerrar sesión */}
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-300 w-full text-left cursor-pointer"
+                className="flex items-center space-x-3 px-4 py-2 text-sm text-[#00B207] dark:text-[#00B207] hover:bg-[#00B207]/10 dark:hover:bg-[#00B207]/20 transition-colors duration-300 w-full text-left cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Cerrar Sesión</span>
