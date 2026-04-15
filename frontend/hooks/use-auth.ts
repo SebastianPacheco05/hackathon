@@ -71,6 +71,17 @@ export function useAuth() {
   const router = useRouter();
   const { canUseCookie, isHydrated } = useCookies();
   const { isRestoring: isRestoringSession } = useSessionRestoreState();
+  const isMockAuthBypass =
+    process.env.NEXT_PUBLIC_MOCK_MODE === 'true' ||
+    process.env.NEXT_PUBLIC_MOCK_AUTH_BYPASS === 'true';
+
+  const mockAdminUser: UserPublic = {
+    id_usuario: 1,
+    nom_usuario: 'Mock',
+    ape_usuario: 'Admin',
+    email_usuario: 'mock-admin@revital.local',
+    id_rol: 1,
+  };
 
   // Query para obtener el usuario actual
   const {
@@ -80,7 +91,7 @@ export function useAuth() {
   } = useQuery({
     queryKey: AUTH_KEYS.currentUser,
     queryFn: authService.getCurrentUser,
-    enabled: isAuthenticated() && isHydrated, // Simplificado: solo verificar token y hidratación
+    enabled: !isMockAuthBypass && isAuthenticated() && isHydrated, // En mock bypass no consultamos /me
     retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
@@ -293,12 +304,14 @@ export function useAuth() {
   const canUseCookies = () => canUseCookie('necessary');
 
   // Estado final de autenticación consumible por UI.
-  const isUserAuthenticated = isAuthenticated() && !!user && isHydrated;
+  const effectiveUser = isMockAuthBypass ? mockAdminUser : user;
+  const isUserAuthenticated = isMockAuthBypass ? isHydrated : isAuthenticated() && !!user && isHydrated;
+  const effectiveLoadingUser = isMockAuthBypass ? false : isLoadingUser;
 
   return {
-    user,
+    user: effectiveUser,
     isAuthenticated: isUserAuthenticated,
-    isLoadingUser,
+    isLoadingUser: effectiveLoadingUser,
     isRestoringSession,
     isLoggingIn,
     isLoggingOut,
