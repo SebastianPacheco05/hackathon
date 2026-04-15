@@ -13,10 +13,10 @@ def test_root_returns_welcome(client: TestClient):
     assert response.status_code == 200
     data = response.json()
     assert "message" in data
-    assert "API" in data["message"] or "Compralo" in data["message"]
+    assert "API" in data["message"] or "AGROSALE" in data["message"]
 
 
 def test_app_import():
     """App can be imported (smoke check)."""
     assert app is not None
-    assert app.title == "Compralo API"
+    assert app.title == "AGROSALE API"

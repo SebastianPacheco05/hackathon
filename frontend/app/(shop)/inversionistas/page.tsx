@@ -10,13 +10,13 @@ const MOCK = {
   ],
   mensaje:
     "Los datos mostrados son ilustrativos. Los reportes oficiales y documentación regulatoria estarán disponibles cuando corresponda.",
-  contactoSeparado: "Para consultas de inversionistas: inversionistas@compralo.com",
+  contactoSeparado: "Para consultas de inversionistas: inversionistas@AGROSALE.com",
 }
 
 export const generateMetadata = (): Metadata => {
   const title = "Información para inversionistas"
   const description =
-    "Resumen corporativo y cifras ilustrativas para potenciales inversionistas interesados en Compralo."
+    "Resumen corporativo y cifras ilustrativas para potenciales inversionistas interesados en AGROSALE."
 
   return {
     title,

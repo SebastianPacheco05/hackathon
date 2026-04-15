@@ -6,7 +6,7 @@ import { buildOpenGraph, buildTwitter } from "@/lib/seo"
 export const generateMetadata = (): Metadata => {
   const title = "Términos y condiciones"
   const description =
-    "Lee los términos y condiciones de uso del sitio y las compras realizadas en Compralo."
+    "Lee los términos y condiciones de uso del sitio y las compras realizadas en AGROSALE."
 
   return {
     title,

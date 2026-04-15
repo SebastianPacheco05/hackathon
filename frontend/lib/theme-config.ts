@@ -11,7 +11,7 @@ export const THEME_CONFIG = {
     slow: 'transition-all duration-500',
   },
   
-  // Colores de marca (Compralo)
+  // Colores de marca (AGROSALE)
   brand: {
     primary: {
       light: '#00B207',

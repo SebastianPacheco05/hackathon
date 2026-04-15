@@ -42,7 +42,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     id: 1,
     name: "María González",
     role: "Cliente frecuente",
-    content: "Compralo ha transformado mi experiencia de compras online. Los productos llegan rápido y la calidad es excepcional. ¡Totalmente recomendado!",
+    content: "AGROSALE ha transformado mi experiencia de compras online. Los productos llegan rápido y la calidad es excepcional. ¡Totalmente recomendado!",
     rating: 5,
     avatar: "MG",
     bgColor: "from-[#00B207] to-[#2ECC71]"

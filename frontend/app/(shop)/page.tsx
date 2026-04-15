@@ -9,7 +9,7 @@ import { buildOpenGraph, buildTwitter } from "@/lib/seo";
 export const generateMetadata = (): Metadata => {
   const title = "Tienda online de productos seleccionados";
   const description =
-    "Explora Compralo: descubre productos destacados, categorías populares y ofertas especiales en una sola tienda online.";
+    "Explora AGROSALE: descubre productos destacados, categorías populares y ofertas especiales en una sola tienda online.";
 
   return {
     title,
@@ -29,7 +29,7 @@ export const generateMetadata = (): Metadata => {
 export default function Home() {
   return (
     <div className="relative">   
-      {/* Hero Section - Compralo Design */}
+      {/* Hero Section - AGROSALE Design */}
       <EcommerceHeroCarousel />
       
       {/* Featured Categories Section */}

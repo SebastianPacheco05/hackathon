@@ -1,4 +1,4 @@
-### Programmatic SEO en Compralo (borrador inicial)
+### Programmatic SEO en AGROSALE (borrador inicial)
 
 Este documento define patrones candidatos de programmatic SEO para `revital_ecommerce/frontend` y los requisitos mínimos para implementarlos sin generar contenido thin.
 

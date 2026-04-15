@@ -8,7 +8,7 @@ const MOCK = {
   secciones: [
     {
       titulo: "Responsable del tratamiento",
-      contenido: "El responsable del tratamiento de tus datos personales es la tienda identificada en el sitio (Compralo / titular de la marca). Puedes contactarnos a través de la página de Contacto o al email indicado en el footer.",
+      contenido: "El responsable del tratamiento de tus datos personales es la tienda identificada en el sitio (AGROSALE / titular de la marca). Puedes contactarnos a través de la página de Contacto o al email indicado en el footer.",
     },
     {
       titulo: "Datos que recogemos",
@@ -32,7 +32,7 @@ const MOCK = {
 export const generateMetadata = (): Metadata => {
   const title = "Política de privacidad"
   const description =
-    "Consulta cómo Compralo trata tus datos personales, qué información recopilamos y cuáles son tus derechos de protección de datos."
+    "Consulta cómo AGROSALE trata tus datos personales, qué información recopilamos y cuáles son tus derechos de protección de datos."
 
   return {
     title,
