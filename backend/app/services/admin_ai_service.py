@@ -798,6 +798,8 @@ def chat_with_admin_ai(
         "get_top_stock_products",
         "get_top_categories_by_revenue", "get_conversion_metrics",
         "get_geographic_sales", "get_hourly_traffic", "get_customer_demographics",
+        "predict_demand", "recommend_production", "detect_anomalies",
+        "analyze_export_readiness", "get_business_insights",
     )
     if name in READ_ONLY_TOOLS:
         reply = admin_ai_actions.execute_action(db, name, params, user_id)

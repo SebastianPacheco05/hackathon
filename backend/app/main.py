@@ -130,9 +130,9 @@ ALLOWED_CORS_ORIGINS = [
     # Producción
     "https://compralo.revital.cloud",
     # Frontend local en dev
-    "http://localhost:3001",
+    "http://localhost:3000",
     # Frontend dev expuesto por IP del servidor
-    "http://46.225.94.64:3001",
+    "http://46.225.94.64:3000",
     # Compatibilidad con puerto 3002 si se usa en algún entorno
     "http://localhost:3002",
     "http://46.225.94.64:3002",

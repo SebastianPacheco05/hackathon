@@ -564,5 +564,107 @@ ADMIN_AI_TOOLS: List[Tool] = [
             },
         },
     },
+    # --- Inteligencia de negocio (PyMEs) ---
+    {
+        "type": "function",
+        "function": {
+            "name": "predict_demand",
+            "description": "Predice demanda en unidades para los próximos días comparando ventas recientes vs período anterior (heurística). Úsala ante preguntas de pronóstico, cuánto venderé, demanda esperada, tendencia de ventas por producto o categoría.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "product_id": {
+                        "type": "number",
+                        "description": "ID de producto (opcional). Si se omite y no hay category_id, analiza top productos de la tienda.",
+                    },
+                    "category_id": {
+                        "type": "number",
+                        "description": "ID de categoría (opcional). Agrega demanda de esa categoría.",
+                    },
+                    "time_range": {
+                        "type": "number",
+                        "description": "Ventana en días para comparar (default 30, mínimo 7).",
+                    },
+                },
+                "required": [],
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "recommend_production",
+            "description": "Recomienda cantidades de producción/reposición cruzando inventario actual con demanda reciente. Úsala para qué producir, qué reponer, prioridad de fabricación.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "time_range": {
+                        "type": "number",
+                        "description": "Días de historial de ventas (default 30).",
+                    },
+                    "safety_factor": {
+                        "type": "number",
+                        "description": "Factor de seguridad sobre demanda estimada (default 1.15, máx 2).",
+                    },
+                },
+                "required": [],
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "detect_anomalies",
+            "description": "Detecta caídas o picos de ingresos y productos de baja rotación con stock alto. Úsala ante caídas de ventas, comportamiento anormal, inventario lento.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "days_recent": {
+                        "type": "number",
+                        "description": "Días de ventana reciente (default 14).",
+                    },
+                    "days_baseline": {
+                        "type": "number",
+                        "description": "Días de línea base previa (default 28).",
+                    },
+                },
+                "required": [],
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "analyze_export_readiness",
+            "description": "Evalúa candidatos a exportación por volumen y consistencia de ventas; sugiere mercados de forma heurística. Úsala para exportar, internacional, mercados externos.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "number",
+                        "description": "Máximo de productos candidatos (default 10).",
+                    },
+                },
+                "required": [],
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_business_insights",
+            "description": "Resumen ejecutivo que combina demanda, producción, anomalías y exportación. Úsala cuando el usuario pida panorama, decisiones estratégicas, qué hacer esta semana o inteligencia de negocio integral.",
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": False,
+            },
+        },
+    },
 ]
 

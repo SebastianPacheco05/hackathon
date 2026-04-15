@@ -18,6 +18,14 @@ export interface AIChatResponse {
   reply: string
 }
 
+/** Respuesta estructurada de módulos de inteligencia de negocio (GET /admin/ai/...). */
+export interface AIBusinessModulePayload {
+  summary: string
+  data: Record<string, unknown>
+  recommendations: string[]
+  generated_at: string
+}
+
 export const aiService = {
   async getHealth(): Promise<AIHealthResponse> {
     return get<AIHealthResponse>('/admin/ai/health')
@@ -29,6 +37,49 @@ export const aiService = {
 
   async chat(message: string, history?: Array<{ role: 'user' | 'assistant'; content: string }>): Promise<AIChatResponse> {
     return post<AIChatResponse>('/admin/ai/chat', { message, history })
+  },
+
+  async getDemandPrediction(params?: {
+    product_id?: number
+    category_id?: number
+    time_range?: number
+  }): Promise<AIBusinessModulePayload> {
+    const sp = new URLSearchParams()
+    if (params?.product_id != null) sp.set('product_id', String(params.product_id))
+    if (params?.category_id != null) sp.set('category_id', String(params.category_id))
+    if (params?.time_range != null) sp.set('time_range', String(params.time_range))
+    const q = sp.toString()
+    return get<AIBusinessModulePayload>(`/admin/ai/predictions/demand${q ? `?${q}` : ''}`)
+  },
+
+  async getProductionRecommendations(params?: {
+    time_range?: number
+    safety_factor?: number
+  }): Promise<AIBusinessModulePayload> {
+    const sp = new URLSearchParams()
+    if (params?.time_range != null) sp.set('time_range', String(params.time_range))
+    if (params?.safety_factor != null) sp.set('safety_factor', String(params.safety_factor))
+    const q = sp.toString()
+    return get<AIBusinessModulePayload>(`/admin/ai/recommendations/production${q ? `?${q}` : ''}`)
+  },
+
+  async getAnomalies(params?: { days_recent?: number; days_baseline?: number }): Promise<AIBusinessModulePayload> {
+    const sp = new URLSearchParams()
+    if (params?.days_recent != null) sp.set('days_recent', String(params.days_recent))
+    if (params?.days_baseline != null) sp.set('days_baseline', String(params.days_baseline))
+    const q = sp.toString()
+    return get<AIBusinessModulePayload>(`/admin/ai/alerts/anomalies${q ? `?${q}` : ''}`)
+  },
+
+  async getExportReadiness(params?: { limit?: number }): Promise<AIBusinessModulePayload> {
+    const sp = new URLSearchParams()
+    if (params?.limit != null) sp.set('limit', String(params.limit))
+    const q = sp.toString()
+    return get<AIBusinessModulePayload>(`/admin/ai/export/readiness${q ? `?${q}` : ''}`)
+  },
+
+  async getBusinessInsights(): Promise<AIBusinessModulePayload> {
+    return get<AIBusinessModulePayload>('/admin/ai/insights')
   },
 
   /**
