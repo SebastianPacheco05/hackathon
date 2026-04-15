@@ -20,6 +20,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import Dict, List, Any
 from services.statistic_service import get_categories_stadistics
+from core.config import settings
+from services import mock_data_service
 
 
 def get_analytics_data(db: Session) -> Dict[str, Any]:
@@ -36,6 +38,8 @@ def get_analytics_data(db: Session) -> Dict[str, Any]:
       `conversionMetrics`, `productPerformance`, `productMetrics`,
       `geoData`, `hourlyTraffic`, `trafficSources`, `customerDemographics`.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_analytics_data()
     try:
         # Obtener métricas de conversión
         conversion_metrics = _get_conversion_metrics(db)

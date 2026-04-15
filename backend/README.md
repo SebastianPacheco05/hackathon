@@ -233,6 +233,24 @@ fastapi dev app/main.py --host 0.0.0.0 --port 8000
 python3 -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+### 4.1 Ejecutar en Modo Mock (sin base de datos)
+
+Si no tienes PostgreSQL disponible, puedes levantar el backend con datos demo:
+
+1. En `.env.development` define:
+```env
+MOCK_MODE=true
+```
+2. Inicia backend normal:
+```bash
+fastapi dev app/main.py --host 0.0.0.0 --port 8000
+```
+
+Con `MOCK_MODE=true`:
+- No se requiere DB para catálogo/dashboard/analytics/IA.
+- Se habilita bypass de auth para rutas admin en entorno demo.
+- Se exponen productos mock + métricas mock + respuestas IA mock.
+
 ### 5. Verificar Instalación
 
 ```bash

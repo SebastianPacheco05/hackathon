@@ -40,11 +40,13 @@ from schemas.product_schema import (
     ProductCreateComposite,
 )
 from services import cloudinary_service
+from services import mock_data_service
 from services.out_of_stock_notification_service import (
     LOW_STOCK_MAX,
     notify_variant_low_stock,
     notify_variant_out_of_stock,
 )
+from core.config import settings
 # No necesitamos importar el schema Product aquí si solo devolvemos mappings
 # y el router se encarga de la validación con el response_model.
 
@@ -181,6 +183,8 @@ def get_products_admin(db: Session, params: dict):
     Salida:
     - lista lista para panel admin con datos agregados y métricas de stock.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_products_admin(params)
     try:
         params = params or {}
         ordenar_por = params.get('ordenar_por', 'nombre')
@@ -391,6 +395,8 @@ def get_products(db: Session):
     Obtiene todos los productos activos (tab_products + variant_combinations).
     Usa fun_get_productos_activos y ratings desde tab_comentarios por product_id.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_products_public()
     try:
         products_query = text("""
             SELECT
@@ -460,6 +466,8 @@ def get_product_by_slug_or_id(db: Session, slug_or_id: str):
     Obtiene un producto por slug (tab_products.slug) o por id.
     Acepta: slug (ej. "laptop-gamer"), id numérico ("5"), o formato legacy "5-null-null-5" (usa último número como id).
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_product_by_slug_or_id(slug_or_id)
     if not slug_or_id or not str(slug_or_id).strip():
         return None
     s = str(slug_or_id).strip()
@@ -1052,6 +1060,8 @@ def get_product_with_variants_for_admin(db: Session, product_id: Decimal):
     Devuelve producto + variant_groups (con imágenes) + combinaciones por grupo para el formulario de edición.
     Modelo: tab_product_variant_groups, tab_product_variant_combinations, tab_product_variant_images.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_product_admin_detail(int(product_id))
     prod_row = db.execute(text("""
         SELECT id, category_id, name, description, id_marca, id_proveedor, is_active
         FROM tab_products WHERE id = :pid
@@ -1283,6 +1293,40 @@ async def create_product(db: Session, product: ProductCreate, image_files: Optio
                       devuelto por la función SQL) o None si la creación falla o la función
                       SQL no devuelve el resultado esperado.
     """
+    if settings.MOCK_MODE:
+        if not product.name:
+            raise Exception("name es requerido")
+        synthetic_payload = type(
+            "CompositePayload",
+            (),
+            {
+                "product": type(
+                    "ProductData",
+                    (),
+                    {
+                        "name": product.name,
+                        "category_id": product.id_categoria or product.category_id or Decimal("10"),
+                        "id_marca": product.id_marca or Decimal("1"),
+                        "id_proveedor": product.id_proveedor or Decimal("1"),
+                        "description": product.description,
+                        "is_active": True if product.ind_activo is None else bool(product.ind_activo),
+                    },
+                )(),
+                "variants": [
+                    type(
+                        "VariantData",
+                        (),
+                        {
+                            "price": product.val_precio or Decimal("0"),
+                            "stock": int(product.num_stock or 0),
+                        },
+                    )()
+                ],
+                "image_urls": [],
+            },
+        )()
+        new_id = mock_data_service.create_product_composite(synthetic_payload)
+        return f"OK:{new_id}"
     try:
         # Validación con tab_categories
         category_id = product.id_categoria or getattr(product, "category_id", None)
@@ -1485,6 +1529,9 @@ def create_product_composite(db: Session, payload: ProductCreateComposite, usr_i
     Crea producto + variant_groups (dominante) + imágenes por grupo + combinaciones (stock/SKU/attributes JSONB).
     Agrupa variantes por atributo 'color' (o primer atributo) y escribe en tab_product_variant_groups/combinations/images.
     """
+    if settings.MOCK_MODE:
+        new_id = mock_data_service.create_product_composite(payload)
+        return f"OK:{new_id}"
     try:
         p = payload.product
         all_attr_ids = set()
@@ -1617,6 +1664,9 @@ def update_product_composite(db: Session, product_id: Decimal, payload: ProductC
     """
     Actualiza producto y reemplaza variant_groups, imágenes por grupo y combinaciones.
     """
+    if settings.MOCK_MODE:
+        mock_data_service.update_product_composite(int(product_id), payload)
+        return "OK"
     try:
         p = payload.product
         r = db.execute(text("""
@@ -2026,6 +2076,9 @@ def deactivate_activate_product(
     activar: bool,
 ):
     """Activa o desactiva producto y sus variantes (fun_deactivate_activate_producto por product_id)."""
+    if settings.MOCK_MODE:
+        mock_data_service.toggle_product(int(product_id), bool(activar))
+        return f"OK:{product_id}"
     try:
         query = text("""
         SELECT fun_deactivate_activate_producto(:p_id_producto, :p_activar, :p_usr_operacion)
@@ -2091,6 +2144,8 @@ def filter_products(db: Session, filters: ProductFilterParams) -> ProductFilterR
     Filtra productos con fun_filter_products (tab_products, variant_combinations).
     Opcionalmente filtra por atributos (combinations.attributes JSONB) en aplicación.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.filter_products(filters)
     try:
         if filters.precio_min is not None and filters.precio_max is not None and filters.precio_min > filters.precio_max:
             raise ValueError("El precio mínimo no puede ser mayor al precio máximo")
@@ -2212,6 +2267,8 @@ def get_filter_stats(db: Session, filters: ProductFilterParams) -> ProductFilter
     Estadísticas de productos que coinciden con los filtros (tab_products + variant_combinations).
     Usa la misma lógica que filter_products pero sin paginación para contar y agregar.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_filter_stats(filters)
     try:
         # Usar fun_filter_products con límite alto para obtener total y agregados
         params = {
@@ -2305,6 +2362,8 @@ def get_filter_options(db: Session, category_id: Optional[int] = None) -> dict:
     marcas. Los atributos solo se devuelven cuando se pasa category_id y son los de esa categoría.
     En combinations.attributes el JSONB usa clave numérica (attribute_id como string).
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_filter_options(category_id=category_id)
     try:
         # Árbol de categorías (solo activas): lista con id, name, slug, parent_id, level, children opcional
         tree_query = text("""
@@ -2449,6 +2508,8 @@ def get_filter_options_admin(db: Session) -> dict:
     """
     Opciones de filtro para admin (tab_categories, tab_marcas, tab_proveedores, precios desde tab_product_variant_combinations).
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_filter_options_admin()
     try:
         categorias_query = text("""
             SELECT id, name AS nom_categoria, parent_id FROM tab_categories ORDER BY name

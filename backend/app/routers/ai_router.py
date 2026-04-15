@@ -15,6 +15,7 @@ from core.database import get_db
 from core.dependencies import require_admin, UserInToken
 from core.exceptions import get_safe_message, MSG_SERVICE_UNAVAILABLE, MSG_BAD_GATEWAY
 from services.groq_service import is_groq_available, DEFAULT_MODEL
+from core.config import settings
 from services.admin_ai_service import (
     detect_intent,
     reply_for_intent,
@@ -26,6 +27,7 @@ from services.admin_ai_service import (
     chat_with_admin_ai,
 )
 from services import admin_ai_business_intel
+from services import mock_data_service
 
 router = APIRouter(tags=["AI Admin"])
 
@@ -35,6 +37,8 @@ async def get_ai_health(
     current_user: UserInToken = Depends(require_admin()),
 ):
     """Indica si la IA está disponible y el modelo en uso. Solo administradores."""
+    if settings.MOCK_MODE:
+        return mock_data_service.ai_health()
     return {"enabled": is_groq_available(), "model": DEFAULT_MODEL if is_groq_available() else None}
 
 
@@ -45,6 +49,8 @@ async def get_ai_summary(
     current_user: UserInToken = Depends(require_admin()),
 ):
     """Genera un resumen en lenguaje natural del dashboard. Solo administradores."""
+    if settings.MOCK_MODE:
+        return mock_data_service.ai_summary(time_range)
     if not is_groq_available():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -75,6 +81,8 @@ async def get_ai_demand_prediction(
     """
     Predicción heurística de demanda (no requiere LLM).
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.ai_business_payload("demand")
     try:
         return admin_ai_business_intel.build_demand_prediction(
             db, product_id, category_id, time_range
@@ -93,6 +101,8 @@ async def get_ai_production_recommendations(
     db: Session = Depends(get_db),
     current_user: UserInToken = Depends(require_admin()),
 ):
+    if settings.MOCK_MODE:
+        return mock_data_service.ai_business_payload("production")
     try:
         return admin_ai_business_intel.build_production_recommendations(
             db, time_range, safety_factor
@@ -111,6 +121,8 @@ async def get_ai_anomalies(
     db: Session = Depends(get_db),
     current_user: UserInToken = Depends(require_admin()),
 ):
+    if settings.MOCK_MODE:
+        return mock_data_service.ai_business_payload("anomalies")
     try:
         return admin_ai_business_intel.build_anomaly_detection(
             db, days_recent, days_baseline
@@ -128,6 +140,8 @@ async def get_ai_export_readiness(
     db: Session = Depends(get_db),
     current_user: UserInToken = Depends(require_admin()),
 ):
+    if settings.MOCK_MODE:
+        return mock_data_service.ai_business_payload("export")
     try:
         return admin_ai_business_intel.build_export_readiness(db, limit)
     except Exception as e:
@@ -142,6 +156,8 @@ async def get_ai_business_insights(
     db: Session = Depends(get_db),
     current_user: UserInToken = Depends(require_admin()),
 ):
+    if settings.MOCK_MODE:
+        return mock_data_service.ai_business_payload("insights")
     try:
         return admin_ai_business_intel.build_business_insights(db)
     except Exception as e:
@@ -158,6 +174,11 @@ async def post_ai_chat(
     current_user: UserInToken = Depends(require_admin()),
 ):
     """Chat con el asistente de IA (respuesta completa). Solo administradores."""
+    if settings.MOCK_MODE:
+        raw = body.get("message")
+        if not isinstance(raw, str):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="message debe ser un string")
+        return mock_data_service.ai_chat_reply(raw.strip())
     if not is_groq_available():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -195,6 +216,26 @@ async def post_ai_chat_stream(
     current_user: UserInToken = Depends(require_admin()),
 ):
     """Chat con streaming (SSE). Solo administradores."""
+    if settings.MOCK_MODE:
+        raw = body.get("message")
+        if not isinstance(raw, str):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="message debe ser un string")
+        message = raw.strip()
+        text = mock_data_service.ai_stream_text(message)
+
+        def mock_stream() -> Iterator[bytes]:
+            chunk_size = 24
+            for i in range(0, len(text), chunk_size):
+                chunk = text[i : i + chunk_size]
+                yield f"data: {json.dumps({'text': chunk})}\n\n".encode("utf-8")
+                time.sleep(0.01)
+            yield b"data: [DONE]\n\n"
+
+        return StreamingResponse(
+            mock_stream(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
     if not is_groq_available():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

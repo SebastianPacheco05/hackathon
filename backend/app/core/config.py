@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     """
     # Configuración de la base de datos
     ENVIRONMENT: str = _ENV
+    MOCK_MODE: bool = False
     DATABASE_URL: str
     
     # Configuración SaaS de la empresa cliente

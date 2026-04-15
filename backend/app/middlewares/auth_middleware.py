@@ -24,6 +24,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.responses import Response
 
 from core.database import get_db
+from core.config import settings
 from services import auth_service
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,17 @@ class AuthMiddleware(BaseHTTPMiddleware):
         """
         path = request.url.path
         method = request.method
+
+        # Modo demo: bypass de auth para operar sin DB/login real.
+        if settings.MOCK_MODE:
+            request.state.current_user = {
+                "id_usuario": 1,
+                "email_usuario": "mock-admin@revital.local",
+                "nom_usuario": "Mock",
+                "ape_usuario": "Admin",
+                "id_rol": 1,
+            }
+            return await call_next(request)
         
         # Permitir que las solicitudes OPTIONS de pre-vuelo de CORS pasen sin autenticación
         if method == "OPTIONS":

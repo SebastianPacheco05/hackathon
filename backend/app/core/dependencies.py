@@ -10,11 +10,22 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from core.database import get_db
+from core.config import settings
 from schemas.auth_schema import UserInToken
 from services import auth_service
 
 # Configuración del esquema de seguridad Bearer
 security = HTTPBearer()
+
+
+def _mock_admin_user() -> UserInToken:
+    return UserInToken(
+        id_usuario=1,
+        email_usuario="mock-admin@revital.local",
+        nom_usuario="Mock",
+        ape_usuario="Admin",
+        id_rol=1,
+    )
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -33,6 +44,8 @@ def get_current_user(
     Raises:
         HTTPException: Si el token es inválido o el usuario no existe
     """
+    if settings.MOCK_MODE:
+        return _mock_admin_user()
     return auth_service.get_current_user(db, credentials.credentials)
 
 def get_current_user_optional(
@@ -50,6 +63,8 @@ def get_current_user_optional(
     Returns:
         Optional[UserInToken]: Información del usuario autenticado o None
     """
+    if settings.MOCK_MODE:
+        return _mock_admin_user()
     if not credentials:
         return None
     

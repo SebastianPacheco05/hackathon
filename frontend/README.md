@@ -306,6 +306,19 @@ pnpm dev
 
 La aplicación estará disponible en: **http://localhost:3001**
 
+### 3.1 Conectar al backend en modo mock
+
+Para demo sin DB real, usa en `frontend/.env` o `.env.development`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+```
+
+Luego levanta el backend con `MOCK_MODE=true` para obtener:
+- 8-12 productos mock en catálogo.
+- dashboard y analytics con datos mock.
+- endpoints de IA admin con respuestas mock.
+
 > **Nota:** El proyecto está configurado para usar `pnpm` automáticamente. Si intentas usar `npm` o `yarn`, recibirás una advertencia gracias a la configuración de `packageManager` en `package.json`.
 
 ## 🎨 Personalización por Cliente
