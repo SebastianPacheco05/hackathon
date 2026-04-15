@@ -46,6 +46,12 @@ ACTION_GET_CONVERSION_METRICS = "get_conversion_metrics"
 ACTION_GET_GEOGRAPHIC_SALES = "get_geographic_sales"
 ACTION_GET_HOURLY_TRAFFIC = "get_hourly_traffic"
 ACTION_GET_CUSTOMER_DEMOGRAPHICS = "get_customer_demographics"
+# Inteligencia de negocio (solo lectura)
+ACTION_PREDICT_DEMAND = "predict_demand"
+ACTION_RECOMMEND_PRODUCTION = "recommend_production"
+ACTION_DETECT_ANOMALIES = "detect_anomalies"
+ACTION_ANALYZE_EXPORT_READINESS = "analyze_export_readiness"
+ACTION_GET_BUSINESS_INSIGHTS = "get_business_insights"
 
 
 def _sanitize_string(value: Any, max_len: int = 500) -> str:
@@ -908,6 +914,70 @@ def _execute_get_customer_demographics(db: Session, params: dict, user_id: str |
         return f"Error al obtener demografía: {str(e)}"
 
 
+def _execute_predict_demand(db: Session, params: dict, user_id: str | Decimal) -> str:
+    """Predicción heurística de demanda (markdown estructurado)."""
+    from services.admin_ai_business_intel import build_demand_prediction, format_business_payload_markdown
+
+    pid = params.get("product_id")
+    cid = params.get("category_id")
+    tr = int(params.get("time_range", 30))
+    try:
+        payload = build_demand_prediction(
+            db,
+            int(pid) if pid is not None else None,
+            int(cid) if cid is not None else None,
+            tr,
+        )
+        return format_business_payload_markdown(payload)
+    except Exception as e:
+        return f"Error en predicción de demanda: {str(e)}"
+
+
+def _execute_recommend_production(db: Session, params: dict, user_id: str | Decimal) -> str:
+    from services.admin_ai_business_intel import build_production_recommendations, format_business_payload_markdown
+
+    tr = int(params.get("time_range", 30))
+    sf = float(params.get("safety_factor", 1.15))
+    try:
+        payload = build_production_recommendations(db, tr, sf)
+        return format_business_payload_markdown(payload)
+    except Exception as e:
+        return f"Error en recomendaciones de producción: {str(e)}"
+
+
+def _execute_detect_anomalies(db: Session, params: dict, user_id: str | Decimal) -> str:
+    from services.admin_ai_business_intel import build_anomaly_detection, format_business_payload_markdown
+
+    dr = int(params.get("days_recent", 14))
+    db_ = int(params.get("days_baseline", 28))
+    try:
+        payload = build_anomaly_detection(db, dr, db_)
+        return format_business_payload_markdown(payload)
+    except Exception as e:
+        return f"Error en detección de anomalías: {str(e)}"
+
+
+def _execute_analyze_export_readiness(db: Session, params: dict, user_id: str | Decimal) -> str:
+    from services.admin_ai_business_intel import build_export_readiness, format_business_payload_markdown
+
+    lim = min(int(params.get("limit", 10)), 25)
+    try:
+        payload = build_export_readiness(db, lim)
+        return format_business_payload_markdown(payload)
+    except Exception as e:
+        return f"Error en análisis export: {str(e)}"
+
+
+def _execute_get_business_insights(db: Session, params: dict, user_id: str | Decimal) -> str:
+    from services.admin_ai_business_intel import build_business_insights, format_business_payload_markdown
+
+    try:
+        payload = build_business_insights(db)
+        return format_business_payload_markdown(payload)
+    except Exception as e:
+        return f"Error al generar insights: {str(e)}"
+
+
 def _get_affected_entities(action_id: str) -> list[str]:
     """
     Devuelve la lista de entidades afectadas por una acción.
@@ -985,6 +1055,16 @@ def execute_action(
         return _execute_get_hourly_traffic(db, params, user_id)
     if action_id == ACTION_GET_CUSTOMER_DEMOGRAPHICS:
         return _execute_get_customer_demographics(db, params, user_id)
+    if action_id == ACTION_PREDICT_DEMAND:
+        return _execute_predict_demand(db, params, user_id)
+    if action_id == ACTION_RECOMMEND_PRODUCTION:
+        return _execute_recommend_production(db, params, user_id)
+    if action_id == ACTION_DETECT_ANOMALIES:
+        return _execute_detect_anomalies(db, params, user_id)
+    if action_id == ACTION_ANALYZE_EXPORT_READINESS:
+        return _execute_analyze_export_readiness(db, params, user_id)
+    if action_id == ACTION_GET_BUSINESS_INSIGHTS:
+        return _execute_get_business_insights(db, params, user_id)
     return "Acción no permitida o no implementada."
 
 

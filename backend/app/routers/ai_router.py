@@ -25,6 +25,7 @@ from services.admin_ai_service import (
     FALLBACK_REPLY,
     chat_with_admin_ai,
 )
+from services import admin_ai_business_intel
 
 router = APIRouter(tags=["AI Admin"])
 
@@ -56,6 +57,93 @@ async def get_ai_summary(
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=get_safe_message(e) or MSG_SERVICE_UNAVAILABLE) from e
     except RuntimeError as e:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=get_safe_message(e) or MSG_BAD_GATEWAY) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=get_safe_message(e),
+        ) from e
+
+
+@router.get("/admin/ai/predictions/demand", status_code=status.HTTP_200_OK)
+async def get_ai_demand_prediction(
+    product_id: int | None = None,
+    category_id: int | None = None,
+    time_range: int = 30,
+    db: Session = Depends(get_db),
+    current_user: UserInToken = Depends(require_admin()),
+):
+    """
+    Predicción heurística de demanda (no requiere LLM).
+    """
+    try:
+        return admin_ai_business_intel.build_demand_prediction(
+            db, product_id, category_id, time_range
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=get_safe_message(e),
+        ) from e
+
+
+@router.get("/admin/ai/recommendations/production", status_code=status.HTTP_200_OK)
+async def get_ai_production_recommendations(
+    time_range: int = 30,
+    safety_factor: float = 1.15,
+    db: Session = Depends(get_db),
+    current_user: UserInToken = Depends(require_admin()),
+):
+    try:
+        return admin_ai_business_intel.build_production_recommendations(
+            db, time_range, safety_factor
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=get_safe_message(e),
+        ) from e
+
+
+@router.get("/admin/ai/alerts/anomalies", status_code=status.HTTP_200_OK)
+async def get_ai_anomalies(
+    days_recent: int = 14,
+    days_baseline: int = 28,
+    db: Session = Depends(get_db),
+    current_user: UserInToken = Depends(require_admin()),
+):
+    try:
+        return admin_ai_business_intel.build_anomaly_detection(
+            db, days_recent, days_baseline
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=get_safe_message(e),
+        ) from e
+
+
+@router.get("/admin/ai/export/readiness", status_code=status.HTTP_200_OK)
+async def get_ai_export_readiness(
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: UserInToken = Depends(require_admin()),
+):
+    try:
+        return admin_ai_business_intel.build_export_readiness(db, limit)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=get_safe_message(e),
+        ) from e
+
+
+@router.get("/admin/ai/insights", status_code=status.HTTP_200_OK)
+async def get_ai_business_insights(
+    db: Session = Depends(get_db),
+    current_user: UserInToken = Depends(require_admin()),
+):
+    try:
+        return admin_ai_business_intel.build_business_insights(db)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
