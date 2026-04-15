@@ -101,7 +101,7 @@ export default function RootLayout({
     "@type": "Organization",
     name: siteName,
     url: siteOrigin,
-    logo: `${siteOrigin}/favicon.ico`,
+    logo: `${siteOrigin}/icon.svg`,
   };
 
   return (

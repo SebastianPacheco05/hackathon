@@ -4,7 +4,7 @@ import { Mail, MapPin, Phone, Clock } from "lucide-react"
 import { buildOpenGraph, buildTwitter } from "@/lib/seo"
 
 const MOCK = {
-  email: "contacto@AGROSALE.com",
+  email: "contacto@agrosale.com",
   telefono: "+57 1 234 5678",
   direccion: "Calle 123 #45-67, Bogotá, Colombia",
   horario: "Lunes a Viernes: 8:00 - 18:00 | Sábados: 9:00 - 14:00",
@@ -46,32 +46,32 @@ export default function ContactPage() {
 
       <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 mb-10">
         <div className="flex gap-3 p-4 rounded-lg bg-gray-100 dark:bg-gray-800">
-          <Mail className="h-6 w-6 shrink-0 text-[#ec2538] dark:text-red-400" />
+          <Mail className="h-6 w-6 shrink-0 text-[#00B207] dark:text-green-400" />
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Email</p>
-            <a href={`mailto:${MOCK.email}`} className="text-gray-600 dark:text-gray-400 hover:text-[#ec2538] dark:hover:text-red-400">
+            <a href={`mailto:${MOCK.email}`} className="text-gray-600 dark:text-gray-400 hover:text-[#00B207] dark:hover:text-green-400">
               {MOCK.email}
             </a>
           </div>
         </div>
         <div className="flex gap-3 p-4 rounded-lg bg-gray-100 dark:bg-gray-800">
-          <Phone className="h-6 w-6 shrink-0 text-[#ec2538] dark:text-red-400" />
+          <Phone className="h-6 w-6 shrink-0 text-[#00B207] dark:text-green-400" />
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Teléfono</p>
-            <a href={`tel:${MOCK.telefono.replace(/\s/g, "")}`} className="text-gray-600 dark:text-gray-400 hover:text-[#ec2538] dark:hover:text-red-400">
+            <a href={`tel:${MOCK.telefono.replace(/\s/g, "")}`} className="text-gray-600 dark:text-gray-400 hover:text-[#00B207] dark:hover:text-green-400">
               {MOCK.telefono}
             </a>
           </div>
         </div>
         <div className="flex gap-3 p-4 rounded-lg bg-gray-100 dark:bg-gray-800 sm:col-span-2">
-          <MapPin className="h-6 w-6 shrink-0 text-[#ec2538] dark:text-red-400" />
+          <MapPin className="h-6 w-6 shrink-0 text-[#00B207] dark:text-green-400" />
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Dirección</p>
             <p className="text-gray-600 dark:text-gray-400">{MOCK.direccion}</p>
           </div>
         </div>
         <div className="flex gap-3 p-4 rounded-lg bg-gray-100 dark:bg-gray-800 sm:col-span-2">
-          <Clock className="h-6 w-6 shrink-0 text-[#ec2538] dark:text-red-400" />
+          <Clock className="h-6 w-6 shrink-0 text-[#00B207] dark:text-green-400" />
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Horario de atención</p>
             <p className="text-gray-600 dark:text-gray-400">{MOCK.horario}</p>
@@ -85,7 +85,7 @@ export default function ContactPage() {
 
       <Link
         href="/"
-        className="inline-flex items-center text-[#ec2538] dark:text-red-400 hover:underline font-medium"
+        className="inline-flex items-center text-[#00B207] dark:text-green-400 hover:underline font-medium"
       >
         ← Volver al inicio
       </Link>

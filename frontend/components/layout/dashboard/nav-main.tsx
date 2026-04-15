@@ -72,8 +72,8 @@ export function NavMain({
                         asChild
                         className={`transition-colors duration-300 ${
                           isActive 
-                            ? 'bg-[#fec806]/10 text-[#fec806] hover:bg-[#fec806]/20 border-l-4 border-[#fec806] group-data-[collapsible=icon]:border-l-0 group-data-[collapsible=icon]:ring-1 group-data-[collapsible=icon]:ring-[#fec806]/70 group-data-[collapsible=icon]:ring-inset' 
-                            : 'text-gray-700 dark:text-gray-300 hover:text-[#fec806] hover:bg-gray-100 dark:hover:bg-gray-800'
+                            ? 'bg-[#00B207]/10 text-[#00B207] hover:bg-[#00B207]/20 border-l-4 border-[#00B207] group-data-[collapsible=icon]:border-l-0 group-data-[collapsible=icon]:ring-1 group-data-[collapsible=icon]:ring-[#00B207]/70 group-data-[collapsible=icon]:ring-inset'
+                            : 'text-gray-700 dark:text-gray-300 hover:text-[#00B207] hover:bg-gray-100 dark:hover:bg-gray-800'
                         }`}
                       >
                         <Link
@@ -82,7 +82,7 @@ export function NavMain({
                             if (isMobile) setOpenMobile(false)
                           }}
                         >
-                          {item.icon && <item.icon className={isActive ? 'text-[#fec806]' : ''} />}
+                          {item.icon && <item.icon className={isActive ? 'text-[#00B207]' : ''} />}
                           <span className={isActive ? 'font-semibold' : ''}>{item.title}</span>
                         </Link>
                       </SidebarMenuButton>

@@ -76,7 +76,7 @@ export default function PrivacidadPage() {
       </div>
       <Link
         href="/"
-        className="inline-flex items-center mt-8 text-[#ec2538] dark:text-red-400 hover:underline font-medium"
+        className="inline-flex items-center mt-8 text-[#00B207] dark:text-green-400 hover:underline font-medium"
       >
         ← Volver al inicio
       </Link>

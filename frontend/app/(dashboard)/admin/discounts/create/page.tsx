@@ -241,7 +241,7 @@ const CreateDiscountPage = () => {
               </Button>
               <Button 
                 type="submit" 
-                className="bg-[#fec806] hover:bg-[#e6b800] text-black"
+                className="bg-[#00B207] hover:bg-[#009a06] text-white"
                 disabled={createMutation.isPending}
               >
                 {createMutation.isPending ? 'Creando...' : 'Crear Descuento'}
