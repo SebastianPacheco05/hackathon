@@ -19,28 +19,28 @@ CREATE OR REPLACE FUNCTION fun_listar_metodos_pago(
     p_id_usuario tab_usuarios.id_usuario%TYPE
 ) RETURNS TABLE (
     id_metodo_pago INT,
-    provider_name VARCHAR(50),
-    brand VARCHAR(50),
-    last_four_digits VARCHAR(4),
-    expiration_month INT,
-    expiration_year INT,
-    is_default BOOLEAN
+    cod_proveedor_pago VARCHAR(50),
+    marca_tarjeta VARCHAR(50),
+    ultimos_cuatro_digitos VARCHAR(4),
+    mes_vencimiento INT,
+    ano_vencimiento INT,
+    ind_predeterminado BOOLEAN
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT
         mpu.id_metodo_pago,
-        mpu.provider_name,
-        mpu.brand,
-        mpu.last_four_digits,
-        mpu.expiration_month,
-        mpu.expiration_year,
-        mpu.is_default
+        mpu.cod_proveedor_pago,
+        mpu.marca_tarjeta,
+        mpu.ultimos_cuatro_digitos,
+        mpu.mes_vencimiento,
+        mpu.ano_vencimiento,
+        mpu.ind_predeterminado
     FROM
         tab_metodos_pago_usuario mpu
     WHERE
         mpu.id_usuario = p_id_usuario
     ORDER BY
-        mpu.is_default DESC, mpu.fec_insert DESC;
+        mpu.ind_predeterminado DESC, mpu.fec_insert DESC;
 END;
 $$ LANGUAGE plpgsql; 

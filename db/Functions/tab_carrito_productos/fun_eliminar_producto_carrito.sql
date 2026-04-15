@@ -1,11 +1,11 @@
 /*
  * Elimina una variante del carrito (total o cantidad indicada).
- * Parámetro: variant_id.
+ * Parámetro: id_combinacion_variante.
  */
 CREATE OR REPLACE FUNCTION fun_eliminar_producto_carrito(
     p_id_usuario tab_usuarios.id_usuario%TYPE,
-    p_session_id tab_carritos.session_id%TYPE,
-    p_variant_id tab_product_variant_combinations.id%TYPE,
+    p_session_id tab_carritos.id_sesion%TYPE,
+    p_variant_id tab_combinaciones_variante_producto.id_combinacion_variante%TYPE,
     p_cantidad tab_carrito_productos.cantidad%TYPE,
     p_usr_operacion tab_carrito_productos.usr_update%TYPE
 ) RETURNS JSON AS $$
@@ -17,10 +17,10 @@ DECLARE
     v_usr_final tab_carrito_productos.usr_update%TYPE;
 BEGIN
     IF p_id_usuario IS NULL AND p_session_id IS NULL THEN
-        RETURN json_build_object('success', false, 'message', 'Debe proporcionar id_usuario o session_id');
+        RETURN json_build_object('success', false, 'message', 'Debe proporcionar id_usuario o id_sesion');
     END IF;
     IF p_variant_id IS NULL OR p_variant_id <= 0 THEN
-        RETURN json_build_object('success', false, 'message', 'variant_id es obligatorio');
+        RETURN json_build_object('success', false, 'message', 'id_combinacion_variante es obligatorio');
     END IF;
     IF p_cantidad IS NOT NULL AND p_cantidad <= 0 THEN
         RETURN json_build_object('success', false, 'message', 'La cantidad a eliminar debe ser mayor a 0');
@@ -31,7 +31,7 @@ BEGIN
 
     SELECT cantidad INTO v_cantidad_actual
     FROM tab_carrito_productos
-    WHERE id_carrito = v_id_carrito AND variant_id = p_variant_id;
+    WHERE id_carrito = v_id_carrito AND id_combinacion_variante = p_variant_id;
 
     IF v_cantidad_actual IS NULL THEN
         RETURN json_build_object('success', false, 'message', 'El producto no está en el carrito');
@@ -50,11 +50,11 @@ BEGIN
 
     IF v_cantidad_restante = 0 THEN
         DELETE FROM tab_carrito_productos
-        WHERE id_carrito = v_id_carrito AND variant_id = p_variant_id;
+        WHERE id_carrito = v_id_carrito AND id_combinacion_variante = p_variant_id;
     ELSE
         UPDATE tab_carrito_productos
         SET cantidad = v_cantidad_restante, usr_update = v_usr_final, fec_update = NOW()
-        WHERE id_carrito = v_id_carrito AND variant_id = p_variant_id;
+        WHERE id_carrito = v_id_carrito AND id_combinacion_variante = p_variant_id;
     END IF;
 
     UPDATE tab_carritos SET fec_update = NOW(), usr_update = v_usr_final WHERE id_carrito = v_id_carrito;

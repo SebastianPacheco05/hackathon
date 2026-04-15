@@ -1,5 +1,5 @@
 /*
- * Inserta un nuevo descuento. Usa category_id_aplica, product_id_aplica, id_marca_aplica
+ * Inserta un nuevo descuento. Usa id_categoria_aplica, id_producto_aplica, id_marca_aplica
  * (tab_descuentos ya no tiene id_categoria, id_linea, id_sublinea ni id_linea_aplica/id_sublinea_aplica).
  */
 CREATE OR REPLACE FUNCTION fun_insert_descuento(
@@ -9,8 +9,8 @@ CREATE OR REPLACE FUNCTION fun_insert_descuento(
         p_val_porce_descuento           DECIMAL(10,2),
         p_val_monto_descuento           DECIMAL(10,2),
         p_aplica_a                      VARCHAR(30),
-        p_category_id_aplica           DECIMAL(10),
-        p_product_id_aplica            DECIMAL(10),
+        p_id_categoria_aplica           DECIMAL(10),
+        p_id_producto_aplica            DECIMAL(10),
         p_id_marca_aplica               DECIMAL(10),
         p_min_valor_pedido              DECIMAL(10,2),
         p_ind_es_para_cumpleanos        BOOLEAN,
@@ -53,20 +53,20 @@ BEGIN
 
     CASE p_aplica_a
         WHEN 'producto_especifico' THEN
-            IF p_product_id_aplica IS NULL THEN
-                RETURN json_build_object('success', false, 'message', 'Para descuentos de producto específico se requiere product_id_aplica');
+            IF p_id_producto_aplica IS NULL THEN
+                RETURN json_build_object('success', false, 'message', 'Para descuentos de producto específico se requiere id_producto_aplica');
             END IF;
         WHEN 'categoria_especifica' THEN
-            IF p_category_id_aplica IS NULL THEN
-                RETURN json_build_object('success', false, 'message', 'Para descuentos de categoría específica se requiere category_id_aplica');
+            IF p_id_categoria_aplica IS NULL THEN
+                RETURN json_build_object('success', false, 'message', 'Para descuentos de categoría específica se requiere id_categoria_aplica');
             END IF;
         WHEN 'marca_especifica' THEN
             IF p_id_marca_aplica IS NULL THEN
                 RETURN json_build_object('success', false, 'message', 'Para descuentos de marca específica se requiere id_marca_aplica');
             END IF;
         WHEN 'linea_especifica', 'sublinea_especifica' THEN
-            IF p_category_id_aplica IS NULL THEN
-                RETURN json_build_object('success', false, 'message', 'Para linea/sublinea use category_id_aplica (categoría)');
+            IF p_id_categoria_aplica IS NULL THEN
+                RETURN json_build_object('success', false, 'message', 'Para linea/sublinea use id_categoria_aplica (categoría)');
             END IF;
         WHEN 'total_pedido', 'costo_envio', 'envio_gratis', 'segunda_unidad', 'compra_minima' THEN
             NULL;
@@ -79,7 +79,7 @@ BEGIN
     INSERT INTO tab_descuentos (
         id_descuento, nom_descuento, des_descuento, tipo_calculo,
         val_porce_descuento, val_monto_descuento, aplica_a,
-        category_id_aplica, product_id_aplica, id_marca_aplica,
+        id_categoria_aplica, id_producto_aplica, id_marca_aplica,
         min_valor_pedido, ind_es_para_cumpleanos,
         fec_inicio, fec_fin, ind_activo,
         max_usos_total, costo_puntos_canje, ind_canjeable_puntos,
@@ -96,8 +96,8 @@ BEGIN
         COALESCE(p_val_porce_descuento, 0),
         COALESCE(p_val_monto_descuento, 0),
         p_aplica_a,
-        p_category_id_aplica,
-        p_product_id_aplica,
+        p_id_categoria_aplica,
+        p_id_producto_aplica,
         p_id_marca_aplica,
         COALESCE(p_min_valor_pedido, 0),
         COALESCE(p_ind_es_para_cumpleanos, FALSE),

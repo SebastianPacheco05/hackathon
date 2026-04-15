@@ -20,7 +20,7 @@
  * RETORNA: VARCHAR - Mensaje indicando éxito o error específico
  * 
  * VALIDACIONES:
- *   - Campos obligatorios: nombre, apellido, email, contraseña, género, celular
+ *   - Campos obligatorios: nombre, apellido, email_usuario, contraseña, género, celular
  *   - Campos de texto deben tener mínimo 3 caracteres
  *   - Género debe estar definido
  *   - Fecha de nacimiento es opcional
@@ -53,7 +53,7 @@ $$
 
         -- VALIDACIÓN 3: Email del usuario
         IF wemail_usuario IS NULL OR wemail_usuario = '' OR LENGTH(TRIM(wemail_usuario)) < 3 THEN
-            RETURN 'Error: El email del usuario es obligatorio y debe tener al menos 3 caracteres.';
+            RETURN 'Error: El email_usuario del usuario es obligatorio y debe tener al menos 3 caracteres.';
         END IF;
 
         -- VALIDACIÓN 4: Contraseña del usuario

@@ -22,9 +22,6 @@ def get_discounts(db:Session):
     Fuente principal:
     - `tab_descuentos`
 
-    Compatibilidad:
-    - Mapea `category_id_aplica/product_id_aplica` a
-      `id_categoria_aplica/id_producto_aplica` para mantener contrato API.
     """
     try:
         query = text("""
@@ -36,8 +33,8 @@ def get_discounts(db:Session):
             val_porce_descuento,
             val_monto_descuento,
             aplica_a,
-            category_id_aplica,
-            product_id_aplica,
+            id_categoria_aplica,
+            id_producto_aplica,
             id_marca_aplica,
             min_valor_pedido,
             ind_es_para_cumpleanos,
@@ -66,14 +63,7 @@ def get_discounts(db:Session):
         """)
         result = db.execute(query)
         rows = result.mappings().all()
-        # Mapear para el esquema: columnas que espera el frontend pero no existen en la tabla
-        mapped = []
-        for row in rows:
-            r = dict(row)
-            r["id_producto_aplica"] = r.get("product_id_aplica")
-            r["id_categoria_aplica"] = r.get("category_id_aplica")
-            mapped.append(r)
-        return mapped
+        return [dict(row) for row in rows]
     except Exception as e:
         db.rollback()
         raise Exception(f"Error al obtener descuentos: {str(e)}")
@@ -116,14 +106,14 @@ def create_discount(db:Session, discount:DiscountCreate, usr_insert:Decimal):
 
     Flujo:
     1) Convierte payload Pydantic a params SQL.
-    2) Normaliza nombres API -> BD (`id_*_aplica` a `*_id_aplica` esperado).
+    2) Prepara parámetros en el formato esperado por `fun_insert_descuento`.
     3) Ejecuta `fun_insert_descuento`.
     4) Parsea respuesta JSON y valida `success`.
     """
     import json
     try:
         params = discount.model_dump()
-        # API usa id_categoria_aplica / id_producto_aplica; la BD usa category_id_aplica / product_id_aplica
+        # API usa id_categoria_aplica / id_producto_aplica; la BD usa id_categoria_aplica / id_producto_aplica
         sql_params = {
             'nom_descuento': params.get('nom_descuento'),
             'des_descuento': params.get('des_descuento'),
@@ -131,8 +121,8 @@ def create_discount(db:Session, discount:DiscountCreate, usr_insert:Decimal):
             'val_porce_descuento': params.get('val_porce_descuento'),
             'val_monto_descuento': params.get('val_monto_descuento'),
             'aplica_a': params.get('aplica_a'),
-            'category_id_aplica': params.get('id_categoria_aplica'),
-            'product_id_aplica': params.get('id_producto_aplica'),
+            'id_categoria_aplica': params.get('id_categoria_aplica'),
+            'id_producto_aplica': params.get('id_producto_aplica'),
             'id_marca_aplica': params.get('id_marca_aplica'),
             'min_valor_pedido': params.get('min_valor_pedido'),
             'ind_es_para_cumpleanos': params.get('ind_es_para_cumpleanos'),
@@ -162,8 +152,8 @@ def create_discount(db:Session, discount:DiscountCreate, usr_insert:Decimal):
             :val_porce_descuento,
             :val_monto_descuento,
             :aplica_a,
-            :category_id_aplica,
-            :product_id_aplica,
+            :id_categoria_aplica,
+            :id_producto_aplica,
             :id_marca_aplica,
             :min_valor_pedido,
             :ind_es_para_cumpleanos,
@@ -220,7 +210,7 @@ def update_discount(db:Session, id_descuento:Decimal, discount:DiscountUpdate, u
         fetch_query = text("""
         SELECT
             nom_descuento, des_descuento, tipo_calculo, val_porce_descuento, val_monto_descuento,
-            aplica_a, category_id_aplica, product_id_aplica, id_marca_aplica,
+            aplica_a, id_categoria_aplica, id_producto_aplica, id_marca_aplica,
             min_valor_pedido, ind_es_para_cumpleanos,
             fec_inicio, fec_fin, max_usos_total, costo_puntos_canje, ind_canjeable_puntos,
             codigo_descuento, max_usos_por_usuario, dias_semana_aplica, horas_inicio, horas_fin,
@@ -234,12 +224,7 @@ def update_discount(db:Session, id_descuento:Decimal, discount:DiscountUpdate, u
         if not row:
             raise Exception("El descuento especificado no existe")
         current = dict(row._mapping) if hasattr(row, "_mapping") else dict(zip(row.keys(), row))
-        # El frontend puede enviar id_categoria_aplica / id_producto_aplica; normalizar a nombres de la función
         update_data = discount.model_dump(exclude_unset=True)
-        if 'id_categoria_aplica' in update_data:
-            update_data['category_id_aplica'] = update_data.pop('id_categoria_aplica')
-        if 'id_producto_aplica' in update_data:
-            update_data['product_id_aplica'] = update_data.pop('id_producto_aplica')
         params = {**current, **update_data}
         params["id_descuento"] = id_descuento
         params["usr_update"] = usr_update
@@ -252,8 +237,8 @@ def update_discount(db:Session, id_descuento:Decimal, discount:DiscountUpdate, u
             :val_porce_descuento,
             :val_monto_descuento,
             :aplica_a,
-            :category_id_aplica,
-            :product_id_aplica,
+            :id_categoria_aplica,
+            :id_producto_aplica,
             :id_marca_aplica,
             :min_valor_pedido,
             :ind_es_para_cumpleanos,
@@ -382,8 +367,8 @@ def get_discount_by_code(db: Session, codigo_descuento: str):
             val_porce_descuento,
             val_monto_descuento,
             aplica_a,
-            category_id_aplica,
-            product_id_aplica,
+            id_categoria_aplica,
+            id_producto_aplica,
             id_marca_aplica,
             min_valor_pedido,
             fec_inicio,
@@ -409,8 +394,8 @@ def get_discount_by_code(db: Session, codigo_descuento: str):
         if not row:
             return None
         r = dict(row)
-        r["id_categoria_aplica"] = r.get("category_id_aplica")
-        r["id_producto_aplica"] = r.get("product_id_aplica")
+        r["id_categoria_aplica"] = r.get("id_categoria_aplica")
+        r["id_producto_aplica"] = r.get("id_producto_aplica")
         return r
     except Exception as e:
         db.rollback()
@@ -533,8 +518,8 @@ def get_active_discounts(db: Session, limit: int = 50):
             val_porce_descuento,
             val_monto_descuento,
             aplica_a,
-            category_id_aplica,
-            product_id_aplica,
+            id_categoria_aplica,
+            id_producto_aplica,
             id_marca_aplica,
             min_valor_pedido,
             fec_inicio,
@@ -565,8 +550,8 @@ def get_active_discounts(db: Session, limit: int = 50):
         mapped_rows = []
         for row in rows:
             mapped = dict(row)
-            mapped['id_categoria_aplica'] = mapped.get('category_id_aplica')
-            mapped['id_producto_aplica'] = mapped.get('product_id_aplica')
+            mapped['id_categoria_aplica'] = mapped.get('id_categoria_aplica')
+            mapped['id_producto_aplica'] = mapped.get('id_producto_aplica')
             mapped_rows.append(mapped)
         return mapped_rows
     except Exception as e:
@@ -588,8 +573,8 @@ def get_birthday_discount(db: Session):
             val_porce_descuento,
             val_monto_descuento,
             aplica_a,
-            category_id_aplica,
-            product_id_aplica,
+            id_categoria_aplica,
+            id_producto_aplica,
             id_marca_aplica,
             min_valor_pedido,
             fec_inicio,
@@ -611,8 +596,8 @@ def get_birthday_discount(db: Session):
         if not row:
             return None
         mapped = dict(row)
-        mapped['id_categoria_aplica'] = mapped.get('category_id_aplica')
-        mapped['id_producto_aplica'] = mapped.get('product_id_aplica')
+        mapped['id_categoria_aplica'] = mapped.get('id_categoria_aplica')
+        mapped['id_producto_aplica'] = mapped.get('id_producto_aplica')
         return mapped
     except Exception as e:
         db.rollback()
@@ -633,8 +618,8 @@ def get_first_purchase_discount(db: Session):
             val_porce_descuento,
             val_monto_descuento,
             aplica_a,
-            category_id_aplica,
-            product_id_aplica,
+            id_categoria_aplica,
+            id_producto_aplica,
             id_marca_aplica,
             min_valor_pedido,
             fec_inicio,
@@ -656,8 +641,8 @@ def get_first_purchase_discount(db: Session):
         if not row:
             return None
         mapped = dict(row)
-        mapped['id_categoria_aplica'] = mapped.get('category_id_aplica')
-        mapped['id_producto_aplica'] = mapped.get('product_id_aplica')
+        mapped['id_categoria_aplica'] = mapped.get('id_categoria_aplica')
+        mapped['id_producto_aplica'] = mapped.get('id_producto_aplica')
         return mapped
     except Exception as e:
         db.rollback()
@@ -734,7 +719,7 @@ def get_discount_by_id(db: Session, id_descuento: Decimal):
         SELECT
             id_descuento, nom_descuento, des_descuento, tipo_calculo,
             val_porce_descuento, val_monto_descuento, aplica_a,
-            category_id_aplica, product_id_aplica, id_marca_aplica,
+            id_categoria_aplica, id_producto_aplica, id_marca_aplica,
             min_valor_pedido, fec_inicio, fec_fin, ind_activo,
             max_usos_total, usos_actuales_total, costo_puntos_canje, ind_canjeable_puntos,
             codigo_descuento, max_usos_por_usuario, requiere_codigo, id_usuario_destino
@@ -747,8 +732,8 @@ def get_discount_by_id(db: Session, id_descuento: Decimal):
         if not row:
             return None
         r = dict(row)
-        r["id_categoria_aplica"] = r.get("category_id_aplica")
-        r["id_producto_aplica"] = r.get("product_id_aplica")
+        r["id_categoria_aplica"] = r.get("id_categoria_aplica")
+        r["id_producto_aplica"] = r.get("id_producto_aplica")
         return r
     except Exception as e:
         db.rollback()

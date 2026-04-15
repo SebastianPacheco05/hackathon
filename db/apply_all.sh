@@ -1,43 +1,38 @@
 #!/usr/bin/env bash
 #
 # Script para crear toda la base de datos Revital e-commerce desde cero (idempotente).
-# Aplica en orden: 1) schema (db_revital.sql: DROP + CREATE tablas), 2) funciones,
-# 3) triggers, 4) vistas, 5) opcional KPIs.
-# Ejecutar desde la raíz del repo o desde revital_ecommerce/db.
+# Aplica en orden: 1) schema, 2) funciones, 3) triggers, 4) vistas, 5) KPIs opcionales.
 #
 # Uso:
 #   ./apply_all.sh
 #   ./apply_all.sh USER HOST DB
 #   ./apply_all.sh USER HOST DB PORT
 #
-# Si no se pasan argumentos, intenta usar variables de entorno (ej. desde backend/.env):
-#   PGHOST, PGPORT, PGUSER, PGDATABASE
-#   o DATABASE_URL (postgresql://user:pass@host:port/dbname)
+# Sin argumentos, usa variables de entorno (PGHOST, PGPORT, PGUSER, PGDATABASE)
+# o carga backend/.env automáticamente (incluyendo DATABASE_URL).
 #
-# IMPORTANTE: Para aplicar o actualizar funciones, PGUSER debe ser el dueño de la base
-# (p. ej. postgres o revital_admin). Si usas el usuario de la app (revital_ecommerce_user)
-# y las funciones ya existen creadas por otro usuario, fallará "must be owner of function".
+# IMPORTANTE: PGUSER debe ser el dueño de la DB (p. ej. postgres o revital_admin)
+# para poder crear/reemplazar funciones.
 # Ejemplo: ./apply_all.sh postgres 46.225.94.64 revital_ecommerce 5432
 #
 set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# --- Cargar .env del backend si existe y no hay argumentos ---
+# --- Cargar .env del backend si no hay argumentos ---
 if [[ $# -eq 0 && -z "$DATABASE_URL" && -f "$SCRIPT_DIR/../backend/.env" ]]; then
     set -a
     source "$SCRIPT_DIR/../backend/.env"
     set +a
 fi
 
-# --- Conexión a la base de datos ---
-if [[ -n "$3" ]]; then
-    export PGUSER="${1:-revital_admin}"
-    export PGHOST="${2:-127.0.0.1}"
-    export PGDATABASE="${3:-revital_ecommerce}"
+# --- Conexión ---
+if [[ -n "${3:-}" ]]; then
+    export PGUSER="$1"
+    export PGHOST="$2"
+    export PGDATABASE="$3"
     export PGPORT="${4:-5432}"
 elif [[ -n "$DATABASE_URL" ]]; then
-    # Parsear DATABASE_URL (postgresql://user:pass@host:port/dbname)
     if [[ "$DATABASE_URL" =~ postgresql://([^:]+):([^@]+)@([^:]+):([0-9]+)/(.+) ]]; then
         export PGUSER="${BASH_REMATCH[1]}"
         export PGPASSWORD="${BASH_REMATCH[2]}"
@@ -66,27 +61,40 @@ echo "[1/5] Aplicando schema (db_revital.sql)..."
 run_psql "$SCRIPT_DIR/db_revital.sql"
 echo ""
 
-# --- 1.5. Migraciones idempotentes (ADD COLUMN IF NOT EXISTS, etc.) ---
-# Útil si la DB existía con un schema anterior sin estas columnas.
+# --- 1.5. Migraciones idempotentes ---
 if [[ -f "$SCRIPT_DIR/migrations/add_opciones_elegidas_orden_productos.sql" ]]; then
-    echo "[1.5/5] Aplicando migración opciones_elegidas (carrito/orden)..."
+    echo "[1.5] Migración: add_opciones_elegidas_orden_productos.sql"
     run_psql "$SCRIPT_DIR/migrations/add_opciones_elegidas_orden_productos.sql" || true
     echo ""
 fi
-if [[ -f "$SCRIPT_DIR/migrations/add_id_proveedor_tab_products.sql" ]]; then
-    echo "[1.5/5] Aplicando migración id_proveedor en tab_products..."
-    run_psql "$SCRIPT_DIR/migrations/add_id_proveedor_tab_products.sql" || true
-    echo ""
-fi
 
-# --- 2. Funciones (orden por dependencias) ---
-# Debe ejecutarse con el usuario dueño de la DB (postgres/revital_admin) para poder crear/reemplazar funciones.
+# --- 2. Funciones ---
 echo "[2/5] Aplicando funciones..."
 
-# 2.1 Utilidades (slug, sku) – deben ir primero
+# Eliminar funciones fun_* previas para evitar conflictos de firma al recrear.
+psql -v ON_ERROR_STOP=1 -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -c "
+DO \$\$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT n.nspname AS schema_name,
+           p.proname AS function_name,
+           pg_get_function_identity_arguments(p.oid) AS args
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.proname LIKE 'fun_%'
+  LOOP
+    EXECUTE format('DROP FUNCTION IF EXISTS %I.%I(%s) CASCADE',
+                   r.schema_name, r.function_name, r.args);
+  END LOOP;
+END
+\$\$;
+"
+
+# 2.1 Utils (slug, sku) – primero porque otros dependen de ellas
 for f in "$SCRIPT_DIR/Functions/utils"/fun_*.sql; do
     [[ -f "$f" ]] || continue
-    echo "  - $(basename "$f")"
+    echo "  - utils/$(basename "$f")"
     run_psql "$f"
 done
 
@@ -97,26 +105,23 @@ for f in "$SCRIPT_DIR/Functions/tab_categorias"/fun_*.sql; do
     run_psql "$f"
 done
 
-# 2.3 Productos (dependen de utils y categories)
+# 2.3 Productos (dependen de utils y categorías)
 for f in "$SCRIPT_DIR/Functions/tab_productos"/fun_*.sql; do
     [[ -f "$f" ]] || continue
     echo "  - tab_productos/$(basename "$f")"
     run_psql "$f"
 done
-# Índices para filtros si existen
 if [[ -f "$SCRIPT_DIR/Functions/tab_productos/indexes_filter_products.sql" ]]; then
     echo "  - tab_productos/indexes_filter_products.sql"
     run_psql "$SCRIPT_DIR/Functions/tab_productos/indexes_filter_products.sql" || true
 fi
 
-# 2.4 Resto de funciones por directorio (orden alfabético)
-# Se omiten: tab_categorias y tab_productos (ya aplicados arriba), tab_lineas/tab_sublineas
-# (tablas obsoletas, reemplazadas por tab_categories), tab_kpis_dashboards (opcional al final).
+# 2.4 Resto de funciones (todos los directorios restantes)
+# Omitimos directorios legacy que referencian tablas eliminadas del schema actual.
 for dir in "$SCRIPT_DIR/Functions"/tab_*; do
     [[ -d "$dir" ]] || continue
     case "$(basename "$dir")" in
-        tab_categorias|tab_productos|tab_lineas|tab_sublineas|tab_kpis_dashboards) continue ;;
-        *) ;;
+        tab_categorias|tab_productos|tab_kpis_dashboards|tab_lineas|tab_sublineas) continue ;;
     esac
     for f in "$dir"/*.sql; do
         [[ -f "$f" ]] || continue
@@ -129,29 +134,20 @@ for dir in "$SCRIPT_DIR/Functions"/tab_*; do
 done
 echo ""
 
-# --- 3. Triggers de auditoría y de negocio ---
+# --- 3. Triggers ---
 echo "[3/5] Aplicando triggers..."
-
-echo "  - audit.sql"
-run_psql "$SCRIPT_DIR/triggers/audit.sql"
-
-echo "  - trg_actualizar_estadisticas_ventas.sql"
-run_psql "$SCRIPT_DIR/triggers/trg_actualizar_estadisticas_ventas.sql"
-
-echo "  - trg_actualizar_stock_compra_proveedor.sql"
-run_psql "$SCRIPT_DIR/triggers/trg_actualizar_stock_compra_proveedor.sql"
-
-echo "  - trg_acumular_puntos_orden.sql"
-run_psql "$SCRIPT_DIR/triggers/trg_acumular_puntos_orden.sql"
-
-echo "  - trg_automatizar_pagos_descuentos.sql"
-run_psql "$SCRIPT_DIR/triggers/trg_automatizar_pagos_descuentos.sql"
-
-echo "  - trg_actualizar_stock_orden_pagada.sql"
-run_psql "$SCRIPT_DIR/triggers/trg_actualizar_stock_orden_pagada.sql"
-
-echo "  - triggers.sql (definición de triggers en tablas)"
-run_psql "$SCRIPT_DIR/triggers/triggers.sql"
+for f in \
+    "$SCRIPT_DIR/triggers/audit.sql" \
+    "$SCRIPT_DIR/triggers/trg_actualizar_estadisticas_ventas.sql" \
+    "$SCRIPT_DIR/triggers/trg_actualizar_stock_compra_proveedor.sql" \
+    "$SCRIPT_DIR/triggers/trg_acumular_puntos_orden.sql" \
+    "$SCRIPT_DIR/triggers/trg_automatizar_pagos_descuentos.sql" \
+    "$SCRIPT_DIR/triggers/trg_actualizar_stock_orden_pagada.sql" \
+    "$SCRIPT_DIR/triggers/triggers.sql"; do
+    [[ -f "$f" ]] || continue
+    echo "  - $(basename "$f")"
+    run_psql "$f"
+done
 echo ""
 
 # --- 4. Vistas ---
@@ -163,13 +159,36 @@ for f in "$SCRIPT_DIR/views"/*.sql; do
 done
 echo ""
 
-# --- 5. Opcional: KPIs / datos iniciales (no falla el script si faltan tablas) ---
-echo "[5/5] Objetos opcionales (KPIs, etc.)..."
-for f in "$SCRIPT_DIR/Functions/tab_kpis_dashboards"/*.sql; do
+# --- 5. KPIs (opcionales) ---
+echo "[5/5] Objetos opcionales (KPIs)..."
+KPI_DIR="$SCRIPT_DIR/Functions/tab_kpis_dashboards"
+
+if [[ -f "$KPI_DIR/schema_kpis_personalizados.sql" ]]; then
+    echo "  - schema_kpis_personalizados.sql"
+    run_psql "$KPI_DIR/schema_kpis_personalizados.sql"
+fi
+
+for f in "$KPI_DIR"/fun_*.sql; do
     [[ -f "$f" ]] || continue
-    echo "  - tab_kpis_dashboards/$(basename "$f")"
-    run_psql "$f" || true
+    echo "  - $(basename "$f")"
+    run_psql "$f"
 done
+
+if [[ -f "$KPI_DIR/vistas_kpis_sistema.sql" ]]; then
+    echo "  - vistas_kpis_sistema.sql"
+    run_psql "$KPI_DIR/vistas_kpis_sistema.sql"
+fi
+
+if [[ -f "$KPI_DIR/datos_kpis_iniciales.sql" ]]; then
+    KPI_COUNT="$(psql -tA -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" \
+        -c "SELECT COUNT(1) FROM tab_kpis_maestros;" 2>/dev/null || echo "0")"
+    if [[ "${KPI_COUNT:-0}" -gt 0 ]]; then
+        echo "  - datos_kpis_iniciales.sql [SKIP: ya existen datos]"
+    else
+        echo "  - datos_kpis_iniciales.sql"
+        run_psql "$KPI_DIR/datos_kpis_iniciales.sql"
+    fi
+fi
 echo ""
 
 echo "=============================================="

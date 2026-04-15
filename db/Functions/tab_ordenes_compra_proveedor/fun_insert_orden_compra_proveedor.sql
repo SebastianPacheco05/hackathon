@@ -4,7 +4,7 @@
  * DESCRIPCIÓN: Inserta un nuevo registro de orden de compra a proveedor.
  *              Genera automáticamente el ID de orden si no se proporciona.
  *              Valida que el producto exista (products) antes de crear la orden.
- *              Modelo actual: product_id + variant_id (opcional).
+ *              Modelo actual: id_producto + id_combinacion_variante (opcional).
  *
  * PARÁMETROS:
  *   - p_id_orden_compra: ID de la orden de compra (opcional, se genera si es NULL)
@@ -30,8 +30,8 @@ CREATE OR REPLACE FUNCTION fun_insert_orden_compra_proveedor(
     p_id_proveedor tab_orden_compra_proveedor.id_proveedor%TYPE,
     p_fec_esperada_entrega tab_orden_compra_proveedor.fec_esperada_entrega%TYPE,
     p_observaciones_orden tab_orden_compra_proveedor.observaciones_orden%TYPE,
-    p_product_id tab_orden_compra_proveedor.product_id%TYPE,
-    p_variant_id tab_orden_compra_proveedor.variant_id%TYPE,
+    p_product_id tab_orden_compra_proveedor.id_producto%TYPE,
+    p_variant_id tab_orden_compra_proveedor.id_combinacion_variante%TYPE,
     p_cantidad_solicitada tab_orden_compra_proveedor.cantidad_solicitada%TYPE,
     p_cantidad_recibida tab_orden_compra_proveedor.cantidad_recibida%TYPE,
     p_costo_unitario tab_orden_compra_proveedor.costo_unitario%TYPE,
@@ -44,7 +44,7 @@ DECLARE
     v_proveedor_existe BOOLEAN := FALSE;
     v_producto_existe BOOLEAN := FALSE;
     v_variant_valida BOOLEAN := TRUE;
-    v_producto_nombre tab_products.name%TYPE;
+    v_producto_nombre tab_productos.nom_producto%TYPE;
     v_inicio_proceso TIMESTAMP := NOW();
 BEGIN
     -- GENERACIÓN AUTOMÁTICA DE ID_ORDEN_COMPRA si no se proporciona
@@ -85,7 +85,7 @@ BEGIN
         RETURN json_build_object(
             'success', false,
             'message', 'El ID del producto es obligatorio y debe ser mayor a 0',
-            'campo_error', 'product_id'
+            'campo_error', 'id_producto'
         );
     END IF;
 
@@ -129,33 +129,33 @@ BEGIN
         );
     END IF;
 
-    -- VALIDACIÓN 3: Verificar que el producto existe (tabla tab_products)
+    -- VALIDACIÓN 3: Verificar que el producto existe (tabla tab_productos)
     SELECT EXISTS(
-        SELECT 1 FROM tab_products p
-        WHERE p.id = p_product_id
-          AND p.is_active = TRUE
+        SELECT 1 FROM tab_productos p
+        WHERE p.id_producto = p_product_id
+          AND p.ind_activo = TRUE
     ) INTO v_producto_existe;
 
     IF v_producto_existe THEN
-        SELECT p.name FROM tab_products p WHERE p.id = p_product_id INTO v_producto_nombre;
+        SELECT p.nom_producto FROM tab_productos p WHERE p.id_producto = p_product_id INTO v_producto_nombre;
     END IF;
 
     -- Si se indicó variante, validar que exista y pertenezca al producto
     IF p_variant_id IS NOT NULL AND p_variant_id > 0 THEN
         SELECT EXISTS(
-            SELECT 1 FROM tab_product_variant_combinations c
-            JOIN tab_product_variant_groups g ON g.id = c.group_id
-            WHERE c.id = p_variant_id
-              AND g.product_id = p_product_id
-              AND c.is_active = TRUE
+            SELECT 1 FROM tab_combinaciones_variante_producto c
+            JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante
+            WHERE c.id_combinacion_variante = p_variant_id
+              AND g.id_producto = p_product_id
+              AND c.ind_activo = TRUE
         ) INTO v_variant_valida;
         IF NOT v_variant_valida THEN
             RETURN json_build_object(
                 'success', false,
                 'message', 'La variante no existe, no pertenece al producto o está inactiva',
-                'campo_error', 'variant_id',
-                'product_id', p_product_id,
-                'variant_id', p_variant_id
+                'campo_error', 'id_combinacion_variante',
+                'id_producto', p_product_id,
+                'id_combinacion_variante', p_variant_id
             );
         END IF;
     END IF;
@@ -167,8 +167,8 @@ BEGIN
             'message', 'El producto especificado no existe. Debe crearlo primero.',
             'producto_existe', false,
             'accion_requerida', 'CREAR_PRODUCTO_PRIMERO',
-            'producto_solicitado', json_build_object('product_id', p_product_id),
-            'instrucciones', 'Cree el producto en la tabla tab_products antes de generar la orden de compra'
+            'producto_solicitado', json_build_object('id_producto', p_product_id),
+            'instrucciones', 'Cree el producto en la tabla tab_productos antes de generar la orden de compra'
         );
     END IF;
 
@@ -185,14 +185,14 @@ BEGIN
         );
     END IF;
 
-    -- INSERCIÓN: Crear orden de compra a proveedor (schema: product_id, variant_id)
+    -- INSERCIÓN: Crear orden de compra a proveedor (schema: id_producto, id_combinacion_variante)
     INSERT INTO tab_orden_compra_proveedor (
         id_orden_compra,
         id_proveedor,
         fec_esperada_entrega,
         observaciones_orden,
-        product_id,
-        variant_id,
+        id_producto,
+        id_combinacion_variante,
         cantidad_solicitada,
         cantidad_recibida,
         costo_unitario,
@@ -222,8 +222,8 @@ BEGIN
         'id_orden_compra_generado', CASE WHEN p_id_orden_compra IS NULL THEN true ELSE false END,
         'producto_existe', true,
         'producto_info', json_build_object(
-            'product_id', p_product_id,
-            'variant_id', p_variant_id,
+            'id_producto', p_product_id,
+            'id_combinacion_variante', p_variant_id,
             'nombre', v_producto_nombre,
             'cantidad_solicitada', p_cantidad_solicitada,
             'costo_unitario', p_costo_unitario,

@@ -52,8 +52,8 @@ def get_users(db: Session):
             cel_usuario,
             fec_nacimiento,
             ind_activo,
-            avatar_seed,
-            avatar_colors,
+            semilla_avatar AS avatar_seed,
+            colores_avatar AS avatar_colors,
             usr_insert,
             fec_insert,
             usr_update,
@@ -90,8 +90,8 @@ def get_user(db: Session, id_usuario: Decimal):
             cel_usuario,
             fec_nacimiento,
             ind_activo,
-            avatar_seed,
-            avatar_colors,
+            semilla_avatar AS avatar_seed,
+            colores_avatar AS avatar_colors,
             usr_insert,
             fec_insert,
             usr_update,
@@ -222,15 +222,15 @@ def update_user(db: Session, id_usuario: Decimal, user: UserUpdate, current_user
         
         result = db.execute(query, update_params)
         fetched_result = result.fetchone()
-        # Actualizar avatar_seed y avatar_colors si vienen en el payload (no están en fun_update_usuarios)
+        # Actualizar semilla_avatar y colores_avatar si vienen en el payload (no están en fun_update_usuarios)
         if user.avatar_seed is not None or user.avatar_colors is not None:
             updates = []
             params = {"id_usuario": id_usuario}
             if user.avatar_seed is not None:
-                updates.append("avatar_seed = :avatar_seed")
+                updates.append("semilla_avatar = :avatar_seed")
                 params["avatar_seed"] = user.avatar_seed
             if user.avatar_colors is not None:
-                updates.append("avatar_colors = :avatar_colors")
+                updates.append("colores_avatar = :avatar_colors")
                 params["avatar_colors"] = user.avatar_colors
             if updates:
                 db.execute(
@@ -280,7 +280,7 @@ def delete_user(db: Session, id_usuario:Decimal):
 def get_user_by_email(db: Session, email: str):
     """
     Obtiene un usuario por su email con los campos mínimos necesarios para autenticación.
-    Incluye deleted_at para detectar cuentas soft-deleted en registro/reactivación.
+    Incluye `fec_eliminacion_cuenta` (alias `deleted_at`) para detectar cuentas soft-deleted.
 
     Args:
         db (Session): La sesión de base de datos SQLAlchemy.
@@ -302,7 +302,7 @@ def get_user_by_email(db: Session, email: str):
             password_usuario,
             id_rol,
             ind_activo,
-            deleted_at
+            fec_eliminacion_cuenta AS deleted_at
         FROM tab_usuarios 
         WHERE email_usuario = :email
         """)
@@ -417,7 +417,7 @@ def get_user_by_id(db: Session, id_usuario: Decimal):
             SELECT 
                 id_usuario, nom_usuario, ape_usuario, email_usuario, 
                 password_usuario, id_rol, ind_genero, cel_usuario, 
-                fec_nacimiento, ind_activo, deleted_at,
+                fec_nacimiento, ind_activo, fec_eliminacion_cuenta AS deleted_at,
                 usr_insert, fec_insert, usr_update, fec_update
             FROM tab_usuarios 
             WHERE id_usuario = :id_usuario

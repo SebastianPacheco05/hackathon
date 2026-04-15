@@ -3,7 +3,7 @@
  * 
  * DESCRIPCIÓN: Actualiza un registro existente de orden de compra a proveedor.
  *              Permite modificar cantidades, costos, fechas y estados.
- *              Controla cambios de estado que afectan el stock.
+ *              Controla cambios de estado que afectan el cant_stock.
  * 
  * PARÁMETROS:
  *   - p_id_orden_compra: ID de la orden de compra a actualizar
@@ -25,10 +25,10 @@
  *   - stock_actualizado: boolean
  * 
  * ESTADOS DEL PRODUCTO:
- *   1 = Solicitado    → No afecta stock
- *   2 = Parcial       → No afecta stock  
+ *   1 = Solicitado    → No afecta cant_stock
+ *   2 = Parcial       → No afecta cant_stock  
  *   3 = Recibido      → ACTUALIZA STOCK (+cantidad_recibida)
- *   4 = Cancelado     → No afecta stock
+ *   4 = Cancelado     → No afecta cant_stock
  * 
  * LÓGICA:
  *   1. Validar que el registro existe
@@ -36,7 +36,7 @@
  *   3. Aplicar cambios solo en campos especificados
  *   4. Validar coherencia de datos
  *   5. Actualizar registro
- *   6. Trigger automático actualiza stock si cambia a estado 3
+ *   6. Trigger automático actualiza cant_stock si cambia a estado 3
  * 
  * AUTOR: Sistema DB_Revital
  * FECHA: 2025
@@ -74,7 +74,7 @@ BEGIN
     SELECT 
         id_orden_compra, id_proveedor,
         fec_orden_compra, fec_esperada_entrega, observaciones_orden,
-        product_id, variant_id,
+        id_producto, id_combinacion_variante,
         cantidad_solicitada, cantidad_recibida, costo_unitario,
         ind_estado_producto, fec_recepcion_completa, observaciones_producto
     INTO v_registro_actual
@@ -258,8 +258,8 @@ BEGIN
         'tiempo_procesamiento', (NOW() - v_inicio_proceso),
         'nota_trigger', CASE 
             WHEN v_estado_anterior != 3 AND v_estado_nuevo = 3 
-            THEN 'El trigger actualizará automáticamente el stock del producto'
-            ELSE 'No se actualizará stock (estado no cambió a Recibido)'
+            THEN 'El trigger actualizará automáticamente el cant_stock del producto'
+            ELSE 'No se actualizará cant_stock (estado no cambió a Recibido)'
         END
     );
     

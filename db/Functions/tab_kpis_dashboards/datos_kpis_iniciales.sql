@@ -22,7 +22,7 @@
 
 INSERT INTO tab_tipos_kpi (nom_tipo_kpi, descripcion, color_categoria, icono, orden_visualizacion) VALUES 
 ('Ventas y Facturación', 'Métricas relacionadas con ventas, ingresos y facturación', '#E74C3C', 'fas fa-chart-line', 1),
-('Productos e Inventario', 'Métricas de productos, stock y rotación de inventario', '#3498DB', 'fas fa-boxes', 2),
+('Productos e Inventario', 'Métricas de productos, cant_stock y rotación de inventario', '#3498DB', 'fas fa-boxes', 2),
 ('Usuarios y Clientes', 'Métricas de usuarios registrados, activos y comportamiento', '#9B59B6', 'fas fa-users', 3),
 ('Rendimiento Operacional', 'Métricas de órdenes, procesos y eficiencia operativa', '#F39C12', 'fas fa-cogs', 4),
 ('Análisis Financiero', 'Métricas financieras, márgenes y rentabilidad', '#27AE60', 'fas fa-dollar-sign', 5),
@@ -103,7 +103,7 @@ INSERT INTO tab_kpis_maestros (
 -- KPI 7: Productos con Stock Bajo
 ((SELECT id_tipo_kpi FROM tab_tipos_kpi WHERE nom_tipo_kpi = 'Productos e Inventario'),
 'Productos con Stock Bajo',
-'Número de productos con stock menor a 10 unidades',
+'Número de productos con cant_stock menor a 10 unidades',
 'SELECT COUNT(1) FROM tab_productos WHERE ind_activo = TRUE AND num_stock < 10',
 'productos', 'INTEGER', 0, 50, 'TIEMPO_REAL', 15, 'NUMERO', '#E67E22', TRUE, FALSE, TRUE, FALSE, NULL),
 

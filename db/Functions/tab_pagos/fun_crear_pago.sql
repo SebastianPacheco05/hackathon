@@ -19,15 +19,14 @@
  */
 CREATE OR REPLACE FUNCTION fun_crear_pago(
     p_id_orden tab_ordenes.id_orden%TYPE,
-    p_provider_name tab_pagos.provider_name%TYPE,
-    -- CAMBIO: Usamos el ID de transacción, que es más genérico. Puede ser nulo al inicio.
-    p_provider_transaction_id tab_pagos.provider_transaction_id%TYPE,
-    p_amount tab_pagos.amount%TYPE,
-    p_status tab_pagos.status%TYPE,
+    p_provider_name tab_pagos.cod_proveedor_pago%TYPE,
+    p_provider_transaction_id tab_pagos.id_transaccion_proveedor%TYPE,
+    p_amount tab_pagos.monto%TYPE,
+    p_status tab_pagos.estado_pago%TYPE,
     p_usr_operacion tab_usuarios.id_usuario%TYPE
 ) RETURNS JSON AS $$
 DECLARE
-    v_id_pago INT;
+    v_id_pago tab_pagos.id_pago%TYPE;
 BEGIN
     -- VALIDACIONES
     IF p_id_orden IS NULL OR p_amount <= 0 THEN
@@ -35,17 +34,21 @@ BEGIN
     END IF;
 
      -- INSERCIÓN ACTUALIZADA
+    SELECT COALESCE(MAX(id_pago), 0) + 1 INTO v_id_pago FROM tab_pagos;
+
     INSERT INTO tab_pagos (
+        id_pago,
         id_orden,
-        provider_name,
-        provider_transaction_id, -- Columna actualizada
-        amount,
-        status,
-        status_detail,
+        cod_proveedor_pago,
+        id_transaccion_proveedor,
+        monto,
+        estado_pago,
+        detalle_estado_pago,
         estado_procesamiento,
         usr_insert,
         fec_insert
     ) VALUES (
+        v_id_pago,
         p_id_orden,
         p_provider_name,
         p_provider_transaction_id,
@@ -55,7 +58,7 @@ BEGIN
         'pendiente',
         p_usr_operacion,
         NOW()
-    ) RETURNING id_pago INTO v_id_pago;
+    );
 
     -- RESPUESTA
     RETURN json_build_object(

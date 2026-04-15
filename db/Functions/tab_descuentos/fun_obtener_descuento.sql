@@ -38,8 +38,8 @@ BEGIN
         d.val_porce_descuento,
         d.val_monto_descuento,
         d.aplica_a,
-        d.category_id_aplica AS id_categoria_aplica,
-        d.product_id_aplica,
+        d.id_categoria_aplica AS id_categoria_aplica,
+        d.id_producto_aplica,
         d.id_marca_aplica,
         d.min_valor_pedido,
         d.ind_es_para_cumpleanos,
@@ -88,13 +88,13 @@ BEGIN
         -- RESOLUCIÓN: Nombres de entidades relacionadas según tipo de aplicación
         CASE 
             WHEN d.aplica_a = 'producto_especifico' THEN
-                (SELECT p.name FROM tab_products p 
-                 WHERE p.id = d.product_id_aplica)
+                (SELECT p.nom_producto FROM tab_productos p 
+                 WHERE p.id_producto = d.id_producto_aplica)
             ELSE NULL
         END AS nombre_producto_aplica,                          -- Nombre del producto específico
         CASE 
             WHEN d.aplica_a = 'categoria_especifica' THEN
-                (SELECT c.name FROM tab_categories c WHERE c.id = d.category_id_aplica)
+                (SELECT c.nom_categoria FROM tab_categorias c WHERE c.id_categoria = d.id_categoria_aplica)
             ELSE NULL
         END AS nombre_categoria_aplica,                         -- Nombre de categoría específica
         CASE 
@@ -148,7 +148,7 @@ BEGIN
             'cantidad_minima_producto', v_descuento.cantidad_minima_producto,
             'requiere_codigo', v_descuento.requiere_codigo,
             -- Referencias de aplicación
-            'id_producto_aplica', v_descuento.product_id_aplica,
+            'id_producto_aplica', v_descuento.id_producto_aplica,
             'nombre_producto_aplica', v_descuento.nombre_producto_aplica,
             'id_categoria_aplica', v_descuento.id_categoria_aplica,
             'nombre_categoria_aplica', v_descuento.nombre_categoria_aplica,

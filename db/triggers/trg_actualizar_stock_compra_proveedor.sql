@@ -1,7 +1,7 @@
 /*
  * Triggers para tab_orden_compra_proveedor (modelo products/product_variants).
- * - Validar que product_id existe (y variant_id si se envía).
- * - Al marcar como recibido (estado 3), actualizar stock de la variante y registrar movimiento.
+ * - Validar que id_producto existe (y id_combinacion_variante si se envía).
+ * - Al marcar como recibido (estado 3), actualizar cant_stock de la variante y registrar movimiento.
  */
 
 CREATE OR REPLACE FUNCTION fun_trigger_validar_producto_compra_proveedor()
@@ -9,22 +9,22 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_ok BOOLEAN := FALSE;
 BEGIN
-    IF NEW.product_id IS NULL THEN
-        RAISE EXCEPTION 'product_id es obligatorio en tab_orden_compra_proveedor.';
+    IF NEW.id_producto IS NULL THEN
+        RAISE EXCEPTION 'id_producto es obligatorio en tab_orden_compra_proveedor.';
     END IF;
 
-    SELECT EXISTS(SELECT 1 FROM tab_products WHERE id = NEW.product_id) INTO v_ok;
+    SELECT EXISTS(SELECT 1 FROM tab_productos WHERE id_producto = NEW.id_producto) INTO v_ok;
     IF NOT v_ok THEN
-        RAISE EXCEPTION 'PRODUCTO_NO_EXISTE: El producto id % no existe en tab_products.', NEW.product_id;
+        RAISE EXCEPTION 'PRODUCTO_NO_EXISTE: El producto id % no existe en tab_productos.', NEW.id_producto;
     END IF;
 
-    IF NEW.variant_id IS NOT NULL THEN
+    IF NEW.id_combinacion_variante IS NOT NULL THEN
         SELECT EXISTS(
-            SELECT 1 FROM tab_product_variants
-            WHERE id = NEW.variant_id AND product_id = NEW.product_id
+            SELECT 1 FROM tab_combinaciones_variante_producto
+            WHERE c.id_combinacion_variante = NEW.id_combinacion_variante AND g.id_producto = NEW.id_producto
         ) INTO v_ok;
         IF NOT v_ok THEN
-            RAISE EXCEPTION 'Variant_id % no pertenece al product_id %.', NEW.variant_id, NEW.product_id;
+            RAISE EXCEPTION 'Variant_id % no pertenece al id_producto %.', NEW.id_combinacion_variante, NEW.id_producto;
         END IF;
     END IF;
 
@@ -44,14 +44,14 @@ BEGIN
         RETURN NEW;
     END IF;
 
-    v_variant_id := NEW.variant_id;
+    v_variant_id := NEW.id_combinacion_variante;
     IF v_variant_id IS NULL THEN
-        RAISE NOTICE 'Orden compra %: variant_id NULL, no se actualiza stock. Asigne variant_id para actualizar inventario.', NEW.id_orden_compra;
+        RAISE NOTICE 'Orden compra %: id_combinacion_variante NULL, no se actualiza cant_stock. Asigne id_combinacion_variante para actualizar inventario.', NEW.id_orden_compra;
         RETURN NEW;
     END IF;
 
-    SELECT stock INTO v_stock_anterior
-    FROM tab_product_variants
+    SELECT cant_stock INTO v_stock_anterior
+    FROM tab_combinaciones_variante_producto
     WHERE id = v_variant_id;
 
     IF NOT FOUND THEN
@@ -60,14 +60,14 @@ BEGIN
 
     v_stock_nuevo := v_stock_anterior + NEW.cantidad_recibida;
 
-    UPDATE tab_product_variants
-    SET stock = v_stock_nuevo, updated_at = NOW()
-    WHERE id = v_variant_id;
+    UPDATE tab_combinaciones_variante_producto
+    SET cant_stock = v_stock_nuevo, fec_update = NOW()
+    WHERE id_combinacion_variante = v_variant_id;
 
     v_descripcion := 'Entrada por compra a proveedor - Orden: ' || NEW.id_orden_compra || ' - Variante: ' || v_variant_id;
 
     INSERT INTO tab_movimientos_inventario (
-        variant_id, tipo_movimiento, cantidad, costo_unitario_movimiento,
+        id_combinacion_variante, tipo_movimiento, cantidad, costo_unitario_movimiento,
         stock_anterior, stock_actual, id_orden_compra, descripcion, observaciones, usr_insert
     ) VALUES (
         v_variant_id, 'entrada_compra', NEW.cantidad_recibida, NEW.costo_unitario,

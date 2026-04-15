@@ -168,24 +168,24 @@ def list_payment_methods(db: Session, user_or_id: Union[UserInToken, int, Decima
             raise ValueError("Parámetro inválido para id de usuario")
 
         query = text("""
-            SELECT 
+            SELECT
                 id_metodo_pago,
                 id_usuario,
-                provider_name,
-                provider_source_id,
-                COALESCE(brand, '') as brand,
-                last_four_digits,
-                expiration_month,
-                expiration_year,
-                card_holder,
-                is_default,
+                cod_proveedor_pago          AS provider_name,
+                id_fuente_proveedor         AS provider_source_id,
+                COALESCE(marca_tarjeta, '') AS brand,
+                ultimos_cuatro_digitos      AS last_four_digits,
+                mes_vencimiento             AS expiration_month,
+                ano_vencimiento             AS expiration_year,
+                titular_tarjeta             AS card_holder,
+                ind_predeterminado          AS is_default,
                 usr_insert,
                 fec_insert,
                 usr_update,
                 fec_update
             FROM tab_metodos_pago_usuario
             WHERE id_usuario = :id_usuario
-            ORDER BY is_default DESC, id_metodo_pago DESC
+            ORDER BY ind_predeterminado DESC, id_metodo_pago DESC
         """)
         
         result = db.execute(query, {"id_usuario": id_usuario})
