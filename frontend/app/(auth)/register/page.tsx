@@ -49,7 +49,7 @@ const RegisterPage = () => {
     return (
       <div className="bg-[#F5F5F5] dark:bg-gray-950 flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10 transition-colors duration-300">
         <div className="flex h-screen w-full items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-[#FF0000] dark:text-red-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#00B207] dark:text-green-400" />
         </div>
       </div>
     );
@@ -64,7 +64,7 @@ const RegisterPage = () => {
             <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
               <Image src={mainLogo} alt="Logo principal" width={40} height={40} className="w-8 h-8 sm:w-10 sm:h-10" />
             </div>
-                <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#ec2538] dark:text-red-500 transition-colors duration-300">AGROSALE</span>
+                <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#00B207] dark:text-green-400 transition-colors duration-300">AGROSALE</span>
             </div>
           </div>
         {/* Formulario de registro */}

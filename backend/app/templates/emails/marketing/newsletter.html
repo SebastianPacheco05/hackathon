@@ -8,7 +8,7 @@
 <div class="greeting">¡Hola {{ subscriber_name }}!</div>
 
 <div class="highlight-box">
-    <h2 style="margin:0; font-size:22px; color:#dc2626;">{{ newsletter.title }}</h2>
+    <h2 style="margin:0; font-size:22px; color:#16a34a;">{{ newsletter.title }}</h2>
     <p style="margin:10px 0 0; font-size:15px; color:#6b7280;">{{ newsletter.subtitle }}</p>
 </div>
 
@@ -52,7 +52,7 @@
         <td style="padding:12px; border:1px solid #e5e7eb; width:50%; text-align:center;">
             <strong>{{ category.name }}</strong><br>
             <span style="font-size:14px; color:#6b7280;">{{ category.description }}</span><br>
-            <a href="{{ frontend_url }}/productos/{{ category.slug }}" style="color:#dc2626; font-size:14px;">Ver más</a>
+            <a href="{{ frontend_url }}/productos/{{ category.slug }}" style="color:#16a34a; font-size:14px;">Ver más</a>
         </td>
         {% endfor %}
         {% if row|length == 1 %}<td style="padding:12px; width:50%;"></td>{% endif %}
@@ -63,7 +63,7 @@
 {% endif %}
 
 <div class="alert alert-warning">
-    ¿No quieres recibir más emails? <a href="{{ unsubscribe_url }}" style="color:#d97706;">Cancelar suscripción</a>.
+    ¿No quieres recibir más emails? <a href="{{ unsubscribe_url }}" style="color:#16a34a;">Cancelar suscripción</a>.
 </div>
 
 <div class="text-center text-muted">

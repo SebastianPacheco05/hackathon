@@ -8,7 +8,7 @@
 <div class="greeting">¡Hola {{ customer_name }}!</div>
 
 <div class="highlight-box">
-    <h2 style="margin:0; font-size:22px; color:#dc2626;">Recomendaciones para ti</h2>
+    <h2 style="margin:0; font-size:22px; color:#16a34a;">Recomendaciones para ti</h2>
     <p style="margin:10px 0 0; font-size:15px; color:#6b7280;">Basado en tus compras, creemos que te gustarán estos productos.</p>
 </div>
 
@@ -22,7 +22,7 @@
             <td>{{ product.name }}</td>
             <td>{{ product.category }}</td>
             <td class="price">${{ product.price }}{% if product.discount %} {{ product.discount }}% OFF{% endif %}</td>
-            <td><a href="{{ frontend_url }}/productos/{{ product.slug }}" style="color:#dc2626; font-size:14px;">Ver</a></td>
+            <td><a href="{{ frontend_url }}/productos/{{ product.slug }}" style="color:#16a34a; font-size:14px;">Ver</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -46,7 +46,7 @@
     <h3>Ofertas relacionadas</h3>
     <table class="table">
         {% for offer in related_offers %}
-        <tr><td>{{ offer.title }}</td><td>{{ offer.discount }}</td><td><a href="{{ frontend_url }}/ofertas/{{ offer.slug }}" style="color:#dc2626;">Ver oferta</a></td></tr>
+        <tr><td>{{ offer.title }}</td><td>{{ offer.discount }}</td><td><a href="{{ frontend_url }}/ofertas/{{ offer.slug }}" style="color:#16a34a;">Ver oferta</a></td></tr>
         {% endfor %}
     </table>
 </div>
@@ -63,7 +63,7 @@
 {% endif %}
 
 <div class="alert alert-warning">
-    <a href="{{ frontend_url }}/preferences" style="color:#d97706;">Actualizar preferencias</a> o <a href="{{ unsubscribe_url }}" style="color:#d97706;">dejar de recibir recomendaciones</a>.
+    <a href="{{ frontend_url }}/preferences" style="color:#16a34a;">Actualizar preferencias</a> o <a href="{{ unsubscribe_url }}" style="color:#16a34a;">dejar de recibir recomendaciones</a>.
 </div>
 
 <div class="text-center text-muted">

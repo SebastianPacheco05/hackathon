@@ -892,7 +892,7 @@ export const CreateDiscountModal: React.FC<CreateDiscountModalProps> = ({
             </Button>
             <Button 
               type="submit" 
-              className="bg-[#fec806] hover:bg-[#e6b800] text-black min-w-[140px]"
+              className="bg-[#00B207] hover:bg-[#009a06] text-white min-w-[140px]"
               disabled={form.formState.isSubmitting}
             >
               {form.formState.isSubmitting ? 'Creando...' : 'Crear Descuento'}

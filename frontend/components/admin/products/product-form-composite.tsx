@@ -712,7 +712,7 @@ export function ProductFormComposite({
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-[#fec806] hover:bg-[#e6b800] text-black"
+          className="bg-[#00B207] hover:bg-[#009a06] text-white"
           data-tour-id="product-submit-button"
         >
           {isLoading ? 'Guardando...' : submitLabel}

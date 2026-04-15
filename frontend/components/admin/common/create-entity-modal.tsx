@@ -129,7 +129,7 @@ export const CreateEntityModal: React.FC<CreateEntityModalProps> = ({ open, onOp
             <Button type="button"  onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button 
               type="submit" 
-              className="bg-[#fec806] hover:bg-[#e6b800] text-black disabled:opacity-50 disabled:cursor-not-allowed" 
+              className="bg-[#00B207] hover:bg-[#009a06] text-white disabled:opacity-50 disabled:cursor-not-allowed" 
             >
               Guardar
             </Button>

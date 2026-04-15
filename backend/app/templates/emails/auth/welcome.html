@@ -8,7 +8,7 @@
 <div class="greeting">¡Hola {{ user_name }}!</div>
 
 <div class="highlight-box">
-    <h2 style="margin:0; font-size:22px; color:#dc2626;">Bienvenido a {{ app_name }}</h2>
+    <h2 style="margin:0; font-size:22px; color:#16a34a;">Bienvenido a {{ app_name }}</h2>
     <p style="margin:10px 0 0; font-size:15px; color:#6b7280;">Tu tienda online de confianza te da la bienvenida.</p>
 </div>
 
@@ -17,17 +17,17 @@
 </div>
 
 {% if first_purchase_discount %}
-<div class="highlight-box" style="background-color:#fef3c7; border:2px solid #f59e0b; margin:20px 0;">
-    <h2 style="margin:0 0 10px; font-size:20px; color:#92400e;">🎉 ¡Descuento especial para tu primera compra!</h2>
-    <p style="margin:0 0 10px; font-size:16px; color:#78350f; font-weight:600;">
+<div class="highlight-box" style="background-color:#f0fdf4; border:2px solid #16a34a; margin:20px 0;">
+    <h2 style="margin:0 0 10px; font-size:20px; color:#166534;">🎉 ¡Descuento especial para tu primera compra!</h2>
+    <p style="margin:0 0 10px; font-size:16px; color:#166534; font-weight:600;">
         {{ first_purchase_discount.nom_descuento }}
     </p>
     {% if first_purchase_discount.des_descuento %}
-    <p style="margin:0 0 10px; font-size:14px; color:#92400e;">
+    <p style="margin:0 0 10px; font-size:14px; color:#166534;">
         {{ first_purchase_discount.des_descuento }}
     </p>
     {% endif %}
-    <p style="margin:10px 0 0; font-size:18px; color:#78350f; font-weight:bold;">
+    <p style="margin:10px 0 0; font-size:18px; color:#166534; font-weight:bold;">
         {% if first_purchase_discount.tipo_calculo %}
             {{ first_purchase_discount.val_porce_descuento or 0 }}% de descuento
         {% else %}
@@ -35,7 +35,7 @@
         {% endif %}
     </p>
     {% if first_purchase_discount.codigo_descuento %}
-    <p style="margin:15px 0 0; font-size:14px; color:#92400e;">
+    <p style="margin:15px 0 0; font-size:14px; color:#166534;">
         <strong>Código:</strong> <span style="background-color:#fff; padding:4px 8px; border-radius:4px; font-family:monospace; font-weight:bold;">{{ first_purchase_discount.codigo_descuento }}</span>
     </p>
     {% endif %}
@@ -79,7 +79,7 @@
 <div class="divider"></div>
 
 <div class="content-block">
-    <p>¿Necesitas ayuda? <a href="mailto:{{ support_email }}" style="color:#dc2626;">{{ support_email }}</a> · <a href="{{ frontend_url }}/contacto" style="color:#dc2626;">Contacto</a></p>
+    <p>¿Necesitas ayuda? <a href="mailto:{{ support_email }}" style="color:#16a34a;">{{ support_email }}</a> · <a href="{{ frontend_url }}/contacto" style="color:#16a34a;">Contacto</a></p>
     <p class="text-muted">Gracias por elegir {{ app_name }}.</p>
 </div>
 {% endblock %}

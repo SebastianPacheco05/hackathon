@@ -75,12 +75,12 @@ export default function PressPage() {
       </ul>
 
       <p className="mt-6 text-sm text-gray-500 dark:text-gray-500">
-        Para solicitudes de prensa: contacto@AGROSALE.com (asunto: Prensa).
+        Para solicitudes de prensa: contacto@agrosale.com (asunto: Prensa).
       </p>
 
       <Link
         href="/"
-        className="inline-flex items-center mt-8 text-[#ec2538] dark:text-red-400 hover:underline font-medium"
+        className="inline-flex items-center mt-8 text-[#00B207] dark:text-green-400 hover:underline font-medium"
       >
         ← Volver al inicio
       </Link>

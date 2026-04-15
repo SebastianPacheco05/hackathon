@@ -22,7 +22,7 @@ const MOCK_FAQS = [
   {
     id: "4",
     pregunta: "¿Cómo contacto a soporte?",
-    respuesta: "Puedes escribirnos a contacto@AGROSALE.com o usar el formulario en la página de Contacto. Atención al cliente de lunes a viernes.",
+    respuesta: "Puedes escribirnos a contacto@agrosale.com o usar el formulario en la página de Contacto. Atención al cliente de lunes a viernes.",
   },
 ]
 
@@ -50,7 +50,7 @@ export default function HelpCenterPage() {
   return (
     <div className="container mx-auto px-4 py-10 max-w-4xl">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-        <HelpCircle className="h-8 w-8 text-[#ec2538] dark:text-red-400" />
+        <HelpCircle className="h-8 w-8 text-[#00B207] dark:text-green-400" />
         Centro de Ayuda
       </h1>
       <p className="text-gray-600 dark:text-gray-400 mb-8">
@@ -72,18 +72,18 @@ export default function HelpCenterPage() {
       </ul>
 
       <div className="p-4 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center gap-3">
-        <Mail className="h-5 w-5 text-[#ec2538] dark:text-red-400 shrink-0" />
+        <Mail className="h-5 w-5 text-[#00B207] dark:text-green-400 shrink-0" />
         <p className="text-sm text-gray-600 dark:text-gray-400">
           ¿No encuentras lo que buscas? Escríbenos a{" "}
-          <a href="mailto:contacto@AGROSALE.com" className="text-[#ec2538] dark:text-red-400 hover:underline">
-            contacto@AGROSALE.com
+          <a href="mailto:contacto@agrosale.com" className="text-[#00B207] dark:text-green-400 hover:underline">
+            contacto@agrosale.com
           </a>
         </p>
       </div>
 
       <Link
         href="/"
-        className="inline-flex items-center mt-8 text-[#ec2538] dark:text-red-400 hover:underline font-medium"
+        className="inline-flex items-center mt-8 text-[#00B207] dark:text-green-400 hover:underline font-medium"
       >
         ← Volver al inicio
       </Link>

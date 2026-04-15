@@ -154,44 +154,44 @@ const iconMapping: Record<string, any> = {
 
 // Mapeo de colores por categoría
 const colorMapping: Record<string, { color: string; bgGradient: string; iconBg: string }> = {
-  'electronica': { color: '#FF8C00', bgGradient: 'from-orange-500 to-orange-600', iconBg: 'bg-orange-100' },
-  'electrónicos': { color: '#FF8C00', bgGradient: 'from-orange-500 to-orange-600', iconBg: 'bg-orange-100' },
+  'electronica': { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
+  'electrónicos': { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
   'tecnologia': { color: '#3B82F6', bgGradient: 'from-blue-500 to-blue-600', iconBg: 'bg-blue-100' },
   'tecnología': { color: '#3B82F6', bgGradient: 'from-blue-500 to-blue-600', iconBg: 'bg-blue-100' },
   'hogar y jardín': { color: '#8B5CF6', bgGradient: 'from-purple-500 to-purple-600', iconBg: 'bg-purple-100' },
   'casa': { color: '#8B5CF6', bgGradient: 'from-purple-500 to-purple-600', iconBg: 'bg-purple-100' },
   'jardin': { color: '#10B981', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
   'jardín': { color: '#10B981', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
-  'belleza': { color: '#EC4899', bgGradient: 'from-pink-500 to-pink-600', iconBg: 'bg-pink-100' },
-  'belleza y cuidado personal': { color: '#EC4899', bgGradient: 'from-pink-500 to-pink-600', iconBg: 'bg-pink-100' },
-  'cuidado personal': { color: '#EC4899', bgGradient: 'from-pink-500 to-pink-600', iconBg: 'bg-pink-100' },
-  'cosmeticos': { color: '#EC4899', bgGradient: 'from-pink-500 to-pink-600', iconBg: 'bg-pink-100' },
-  'cosméticos': { color: '#EC4899', bgGradient: 'from-pink-500 to-pink-600', iconBg: 'bg-pink-100' },
-  'moda': { color: '#ec2538', bgGradient: 'from-red-500 to-red-600', iconBg: 'bg-red-100' },
-  'ropa': { color: '#ec2538', bgGradient: 'from-red-500 to-red-600', iconBg: 'bg-red-100' },
-  'accesorios': { color: '#ec2538', bgGradient: 'from-red-500 to-red-600', iconBg: 'bg-red-100' },
-  'ropa y accesorios': { color: '#ec2538', bgGradient: 'from-red-500 to-red-600', iconBg: 'bg-red-100' },
+  'belleza': { color: '#7BC47F', bgGradient: 'from-emerald-400 to-green-500', iconBg: 'bg-emerald-100' },
+  'belleza y cuidado personal': { color: '#7BC47F', bgGradient: 'from-emerald-400 to-green-500', iconBg: 'bg-emerald-100' },
+  'cuidado personal': { color: '#7BC47F', bgGradient: 'from-emerald-400 to-green-500', iconBg: 'bg-emerald-100' },
+  'cosmeticos': { color: '#7BC47F', bgGradient: 'from-emerald-400 to-green-500', iconBg: 'bg-emerald-100' },
+  'cosméticos': { color: '#7BC47F', bgGradient: 'from-emerald-400 to-green-500', iconBg: 'bg-emerald-100' },
+  'moda': { color: '#00B207', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
+  'ropa': { color: '#00B207', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
+  'accesorios': { color: '#00B207', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
+  'ropa y accesorios': { color: '#00B207', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
   'gaming': { color: '#8B5CF6', bgGradient: 'from-purple-500 to-purple-600', iconBg: 'bg-purple-100' },
   'videojuegos': { color: '#8B5CF6', bgGradient: 'from-purple-500 to-purple-600', iconBg: 'bg-purple-100' },
   'salud': { color: '#10B981', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
   'salud y bienestar': { color: '#10B981', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
   'bienestar': { color: '#10B981', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
   'deportes': { color: '#10B981', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
-  'ferreteria': { color: '#F59E0B', bgGradient: 'from-amber-500 to-amber-600', iconBg: 'bg-amber-100' },
-  'ferretería': { color: '#F59E0B', bgGradient: 'from-amber-500 to-amber-600', iconBg: 'bg-amber-100' },
-  'construccion': { color: '#EF4444', bgGradient: 'from-red-500 to-red-600', iconBg: 'bg-red-100' },
-  'construcción': { color: '#EF4444', bgGradient: 'from-red-500 to-red-600', iconBg: 'bg-red-100' },
+  'ferreteria': { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
+  'ferretería': { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
+  'construccion': { color: '#16A34A', bgGradient: 'from-green-600 to-emerald-700', iconBg: 'bg-green-100' },
+  'construcción': { color: '#16A34A', bgGradient: 'from-green-600 to-emerald-700', iconBg: 'bg-green-100' },
   'oficina': { color: '#6366F1', bgGradient: 'from-indigo-500 to-indigo-600', iconBg: 'bg-indigo-100' },
   'automoviles': { color: '#374151', bgGradient: 'from-gray-600 to-gray-700', iconBg: 'bg-gray-100' },
   'autos': { color: '#374151', bgGradient: 'from-gray-600 to-gray-700', iconBg: 'bg-gray-100' },
-  'libros': { color: '#F59E0B', bgGradient: 'from-amber-500 to-amber-600', iconBg: 'bg-amber-100' },
+  'libros': { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
   'bebes': { color: '#FB7185', bgGradient: 'from-rose-400 to-rose-500', iconBg: 'bg-rose-100' },
   'bebés': { color: '#FB7185', bgGradient: 'from-rose-400 to-rose-500', iconBg: 'bg-rose-100' },
   'mascotas': { color: '#A855F7', bgGradient: 'from-purple-500 to-purple-600', iconBg: 'bg-purple-100' },
-  'comida': { color: '#F97316', bgGradient: 'from-orange-500 to-orange-600', iconBg: 'bg-orange-100' },
-  'alimentos': { color: '#F97316', bgGradient: 'from-orange-500 to-orange-600', iconBg: 'bg-orange-100' },
-  'bebidas': { color: '#F97316', bgGradient: 'from-orange-500 to-orange-600', iconBg: 'bg-orange-100' },
-  'alimentos y bebidas': { color: '#F97316', bgGradient: 'from-orange-500 to-orange-600', iconBg: 'bg-orange-100' },
+  'comida': { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
+  'alimentos': { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
+  'bebidas': { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
+  'alimentos y bebidas': { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
   'musica': { color: '#06B6D4', bgGradient: 'from-cyan-500 to-cyan-600', iconBg: 'bg-cyan-100' },
   'música': { color: '#06B6D4', bgGradient: 'from-cyan-500 to-cyan-600', iconBg: 'bg-cyan-100' },
   'fotografia': { color: '#6366F1', bgGradient: 'from-indigo-500 to-indigo-600', iconBg: 'bg-indigo-100' },
@@ -277,16 +277,16 @@ export const getIconForSubline = (nomSublinea: string) => getIconByName(nomSubli
 
 // Paleta de colores predefinida para asignar automáticamente a las categorías
 const colorPalette = [
-  { color: '#3B82F6', bgGradient: 'from-blue-500 to-blue-600', iconBg: 'bg-blue-100' }, // Azul
-  { color: '#10B981', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' }, // Verde
-  { color: '#EC4899', bgGradient: 'from-pink-500 to-pink-600', iconBg: 'bg-pink-100' }, // Rosa
-  { color: '#F59E0B', bgGradient: 'from-amber-500 to-amber-600', iconBg: 'bg-amber-100' }, // Ámbar
-  { color: '#EF4444', bgGradient: 'from-red-500 to-red-600', iconBg: 'bg-red-100' }, // Rojo
-  { color: '#6366F1', bgGradient: 'from-indigo-500 to-indigo-600', iconBg: 'bg-indigo-100' }, // Índigo
-  { color: '#8B5CF6', bgGradient: 'from-purple-500 to-purple-600', iconBg: 'bg-purple-100' }, // Púrpura
-  { color: '#06B6D4', bgGradient: 'from-cyan-500 to-cyan-600', iconBg: 'bg-cyan-100' }, // Cian
-  { color: '#F97316', bgGradient: 'from-orange-500 to-orange-600', iconBg: 'bg-orange-100' }, // Naranja
-  { color: '#84CC16', bgGradient: 'from-lime-500 to-lime-600', iconBg: 'bg-lime-100' }, // Lima
+  { color: '#00B207', bgGradient: 'from-green-500 to-green-600', iconBg: 'bg-green-100' },
+  { color: '#16A34A', bgGradient: 'from-emerald-500 to-emerald-600', iconBg: 'bg-emerald-100' },
+  { color: '#34A853', bgGradient: 'from-green-500 to-emerald-600', iconBg: 'bg-green-100' },
+  { color: '#4CAF50', bgGradient: 'from-green-400 to-green-500', iconBg: 'bg-green-100' },
+  { color: '#66BB6A', bgGradient: 'from-green-400 to-emerald-500', iconBg: 'bg-emerald-100' },
+  { color: '#7BC47F', bgGradient: 'from-emerald-400 to-green-500', iconBg: 'bg-emerald-100' },
+  { color: '#81C784', bgGradient: 'from-lime-400 to-green-500', iconBg: 'bg-lime-100' },
+  { color: '#43A047', bgGradient: 'from-green-600 to-emerald-700', iconBg: 'bg-green-100' },
+  { color: '#2E7D32', bgGradient: 'from-green-700 to-emerald-800', iconBg: 'bg-green-100' },
+  { color: '#A5D6A7', bgGradient: 'from-lime-300 to-green-400', iconBg: 'bg-lime-100' },
 ];
 
 // Función para obtener colores basados en el índice (posición en la lista)

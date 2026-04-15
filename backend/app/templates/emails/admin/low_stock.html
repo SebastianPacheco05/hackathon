@@ -22,7 +22,7 @@
         {% if product.sku is defined and product.sku %}
         <tr><td><strong>SKU</strong></td><td>{{ product.sku }}</td></tr>
         {% endif %}
-        <tr><td><strong>Stock actual (variante)</strong></td><td style="font-weight:bold; color:#d97706;">{{ product.stock }}</td></tr>
+        <tr><td><strong>Stock actual (variante)</strong></td><td style="font-weight:bold; color:#34a853;">{{ product.stock }}</td></tr>
         <tr><td><strong>Umbral “stock bajo”</strong></td><td>1–{{ product.min_stock }} unidades (mismo criterio que el listado admin)</td></tr>
         <tr><td><strong>Stock recomendado</strong></td><td>{{ product.recommended_stock }}</td></tr>
         {% if product.order_id is defined and product.order_id %}
