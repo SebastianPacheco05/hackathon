@@ -47,7 +47,7 @@ async def get_ai_summary(
     if not is_groq_available():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="La IA no está configurada. Añade GROQ_API_KEY al entorno.",
+            detail="La IA no está configurada. Añade OPENAI_API_KEY al entorno.",
         )
     try:
         summary_text = generate_dashboard_summary(db, time_range)
@@ -73,7 +73,7 @@ async def post_ai_chat(
     if not is_groq_available():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="La IA no está configurada. Añade GROQ_API_KEY al entorno.",
+            detail="La IA no está configurada. Añade OPENAI_API_KEY al entorno.",
         )
     raw = body.get("message")
     if not isinstance(raw, str):
@@ -110,7 +110,7 @@ async def post_ai_chat_stream(
     if not is_groq_available():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="La IA no está configurada. Añade GROQ_API_KEY al entorno.",
+            detail="La IA no está configurada. Añade OPENAI_API_KEY al entorno.",
         )
     raw = body.get("message")
     if not isinstance(raw, str):

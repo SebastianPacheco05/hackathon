@@ -49,6 +49,7 @@ class Settings(BaseSettings):
         
     """
     # Configuración de la base de datos
+    ENVIRONMENT: str = _ENV
     DATABASE_URL: str
     
     # Configuración SaaS de la empresa cliente
@@ -90,9 +91,10 @@ class Settings(BaseSettings):
     WOMPI_INTEGRITY_SECRET: str
     WOMPI_ENVIRONMENT: str = "sandbox"
 
-    # Groq: clave API para funcionalidades de IA (resumen/chat admin).
-    # Es opcional; si falta, las rutas /admin/ai devuelven 503.
-    GROQ_API_KEY: Optional[str] = None
+    # OpenAI: clave y modelo para funcionalidades de IA (resumen/chat admin).
+    # Si falta la API key, las rutas /admin/ai devuelven 503.
+    OPENAI_API_KEY: Optional[str] = None
+    OPENAI_MODEL: str = "gpt-4o-mini"
 
     # Cloudflare Turnstile (CAPTCHA) - verificación del lado servidor.
     # Si no está configurado, el backend no valida el captcha y se considera deshabilitado.

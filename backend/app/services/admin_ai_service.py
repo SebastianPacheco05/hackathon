@@ -714,7 +714,7 @@ def chat_with_admin_ai(
         )
     except ValueError:
         # IA no disponible -> mensaje claro al usuario.
-        error_msg = "La IA no está configurada actualmente. Pídele al administrador que configure GROQ_API_KEY."
+        error_msg = "La IA no está configurada actualmente. Pídele al administrador que configure OPENAI_API_KEY."
         save_conversation(db, user_id, message, error_msg)
         return error_msg
 
