@@ -59,9 +59,9 @@ export const useThemeColors = (): ThemeColors => {
       divider: 'border-gray-600',
       
       brand: {
-        primary: 'text-red-500',
-        secondary: 'text-orange-500',
-        accent: 'text-yellow-400',
+        primary: 'text-[#00B207]',
+        secondary: 'text-[#34A853]',
+        accent: 'text-[#7BC47F]',
       },
       
       interactive: {
@@ -91,9 +91,9 @@ export const useThemeColors = (): ThemeColors => {
     divider: 'border-gray-100',
     
     brand: {
-      primary: 'text-red-600',
-      secondary: 'text-orange-600',
-      accent: 'text-yellow-500',
+      primary: 'text-[#00B207]',
+      secondary: 'text-[#2F8F46]',
+      accent: 'text-[#6FB873]',
     },
     
     interactive: {

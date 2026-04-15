@@ -69,7 +69,7 @@ const SocialSection: React.FC<SocialSectionProps> = ({
 }) => {
   return (
     <div className="space-y-4 min-w-0">
-      <h3 className="text-[#ec2538] dark:text-red-400 text-lg font-semibold transition-colors duration-300">{title}</h3>
+      <h3 className="text-[#00B207] dark:text-[#00B207] text-lg font-semibold transition-colors duration-300">{title}</h3>
       <div className="flex flex-wrap gap-2 sm:gap-3">
         {links.map((link, index) => (
           <Link
@@ -77,7 +77,7 @@ const SocialSection: React.FC<SocialSectionProps> = ({
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-3 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-[#ec2538] dark:hover:bg-red-500 transition-colors duration-300 touch-manipulation text-gray-600 dark:text-gray-300 hover:text-white"
+            className="p-3 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-[#00B207] dark:hover:bg-[#00B207] transition-colors duration-300 touch-manipulation text-gray-600 dark:text-gray-300 hover:text-white"
             aria-label={link.platform}
           >
             {link.icon}

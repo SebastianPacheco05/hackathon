@@ -97,7 +97,7 @@ const FeaturedCategories = () => {
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div 
-          className="absolute -top-20 -right-20 w-60 h-60 bg-linear-to-br from-[#FF8C00]/10 to-[#fec806]/10 dark:from-[#FF8C00]/20 dark:to-[#fec806]/20 rounded-full blur-3xl"
+          className="absolute -top-20 -right-20 w-60 h-60 bg-linear-to-br from-[#34A853]/10 to-[#7BC47F]/10 dark:from-[#34A853]/20 dark:to-[#7BC47F]/20 rounded-full blur-3xl"
           animate={{ 
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.6, 0.3]
@@ -109,7 +109,7 @@ const FeaturedCategories = () => {
           }}
         />
         <motion.div 
-          className="absolute -bottom-20 -left-20 w-60 h-60 bg-linear-to-br from-[#ec2538]/10 to-[#FF8C00]/10 dark:from-[#ec2538]/20 dark:to-[#FF8C00]/20 rounded-full blur-3xl"
+          className="absolute -bottom-20 -left-20 w-60 h-60 bg-linear-to-br from-[#00B207]/10 to-[#34A853]/10 dark:from-[#00B207]/20 dark:to-[#34A853]/20 rounded-full blur-3xl"
           animate={{ 
             scale: [1.2, 1, 1.2],
             opacity: [0.6, 0.3, 0.6]
@@ -124,18 +124,18 @@ const FeaturedCategories = () => {
         
         {/* Floating geometric shapes */}
         <motion.div 
-          className="absolute top-20 left-1/4 w-4 h-4 bg-[#FF8C00]/30 dark:bg-[#FF8C00]/50 rounded-full"
+          className="absolute top-20 left-1/4 w-4 h-4 bg-[#34A853]/30 dark:bg-[#34A853]/50 rounded-full"
           variants={floatingVariants}
           animate="animate"
         />
         <motion.div 
-          className="absolute top-40 right-1/4 w-3 h-3 bg-[#ec2538]/30 dark:bg-[#ec2538]/50 rounded-full"
+          className="absolute top-40 right-1/4 w-3 h-3 bg-[#00B207]/30 dark:bg-[#00B207]/50 rounded-full"
           variants={floatingVariants}
           animate="animate"
           transition={{ delay: 1 }}
         />
         <motion.div 
-          className="absolute bottom-40 left-1/3 w-5 h-5 bg-[#fec806]/30 dark:bg-[#fec806]/50 rounded-full"
+          className="absolute bottom-40 left-1/3 w-5 h-5 bg-[#7BC47F]/30 dark:bg-[#7BC47F]/50 rounded-full"
           variants={floatingVariants}
           animate="animate"
           transition={{ delay: 2 }}
@@ -157,7 +157,7 @@ const FeaturedCategories = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             Explora Nuestras{" "}
-            <span className="bg-linear-to-br from-[#FF8C00] to-[#fec806] bg-clip-text text-transparent">
+            <span className="bg-linear-to-br from-[#00B207] to-[#7BC47F] bg-clip-text text-transparent">
               Categorías
             </span>
           </motion.h2>
@@ -187,7 +187,7 @@ const FeaturedCategories = () => {
         {/* Error State */}
         {error && !isLoading && (
           <div className="text-center py-12">
-            <p className="text-red-500 dark:text-red-400 text-lg transition-colors duration-300">{error}</p>
+            <p className="text-[#00B207] dark:text-[#00B207] text-lg transition-colors duration-300">{error}</p>
           </div>
         )}
 
@@ -304,10 +304,10 @@ const FeaturedCategories = () => {
         >
           <MotionLink
             href="/categories"
-            className="inline-flex items-center justify-center min-h-12 min-w-12 bg-linear-to-br from-[#ec2538] to-[#FF8C00] text-white font-bold py-4 px-8 rounded-xl shadow-lg dark:shadow-gray-900/25 hover:shadow-xl transition-all duration-300 text-lg cursor-pointer"
+            className="inline-flex items-center justify-center min-h-12 min-w-12 bg-linear-to-br from-[#00B207] to-[#2ECC71] text-white font-bold py-4 px-8 rounded-xl shadow-lg dark:shadow-gray-900/25 hover:shadow-xl transition-all duration-300 text-lg cursor-pointer"
             whileHover={{ 
               scale: 1.05,
-              boxShadow: "0 25px 50px -12px rgba(236, 37, 56, 0.4)"
+              boxShadow: "0 25px 50px -12px rgba(0, 178, 7, 0.4)"
             }}
             whileTap={{ scale: 0.95 }}
           >

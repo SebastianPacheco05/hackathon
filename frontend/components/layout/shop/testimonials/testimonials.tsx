@@ -23,9 +23,9 @@ interface Testimonial {
 }
 
 const BG_GRADIENTS = [
-  "from-[#ec2538] to-[#FF8C00]",
-  "from-[#FF8C00] to-[#fec806]",
-  "from-[#fec806] to-[#ec2538]",
+  "from-[#00B207] to-[#2ECC71]",
+  "from-[#34A853] to-[#7BC47F]",
+  "from-[#7BC47F] to-[#00B207]",
 ]
 
 const EASE_OUT: Easing = [0.16, 1, 0.3, 1]
@@ -45,7 +45,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     content: "Compralo ha transformado mi experiencia de compras online. Los productos llegan rápido y la calidad es excepcional. ¡Totalmente recomendado!",
     rating: 5,
     avatar: "MG",
-    bgColor: "from-[#ec2538] to-[#FF8C00]"
+    bgColor: "from-[#00B207] to-[#2ECC71]"
   },
   {
     id: 2,
@@ -54,7 +54,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     content: "La variedad de productos es increíble y los precios son muy competitivos. El servicio al cliente es de primera clase.",
     rating: 5,
     avatar: "CR",
-    bgColor: "from-[#FF8C00] to-[#fec806]"
+    bgColor: "from-[#34A853] to-[#7BC47F]"
   },
   {
     id: 3,
@@ -63,7 +63,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     content: "Me encanta la facilidad para encontrar todo lo que necesito en un solo lugar. Las ofertas son reales y los descuentos increíbles.",
     rating: 5,
     avatar: "AM",
-    bgColor: "from-[#fec806] to-[#ec2538]"
+    bgColor: "from-[#7BC47F] to-[#00B207]"
   }
 ]
 
@@ -173,7 +173,7 @@ const TestimonialsSection = () => {
         custom={i}
       >
         <Star 
-          className={`w-5 h-5 ${i < rating ? 'fill-[#fec806] text-[#fec806]' : 'text-gray-300 dark:text-gray-600'}`}
+          className={`w-5 h-5 ${i < rating ? 'fill-[#7BC47F] text-[#7BC47F]' : 'text-gray-300 dark:text-gray-600'}`}
         />
       </motion.div>
     ))
@@ -184,7 +184,7 @@ const TestimonialsSection = () => {
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div 
-          className="absolute -top-20 -left-20 w-60 h-60 bg-linear-to-r from-[#ec2538]/10 to-[#FF8C00]/10 dark:from-[#ec2538]/20 dark:to-[#FF8C00]/20 rounded-full blur-3xl"
+          className="absolute -top-20 -left-20 w-60 h-60 bg-linear-to-r from-[#00B207]/10 to-[#34A853]/10 dark:from-[#00B207]/20 dark:to-[#34A853]/20 rounded-full blur-3xl"
           animate={{ 
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.6, 0.3]
@@ -196,7 +196,7 @@ const TestimonialsSection = () => {
           }}
         />
         <motion.div 
-          className="absolute -bottom-20 -right-20 w-80 h-80 bg-linear-to-r from-[#fec806]/10 to-[#ec2538]/10 dark:from-[#fec806]/20 dark:to-[#ec2538]/20 rounded-full blur-3xl"
+          className="absolute -bottom-20 -right-20 w-80 h-80 bg-linear-to-r from-[#7BC47F]/10 to-[#00B207]/10 dark:from-[#7BC47F]/20 dark:to-[#00B207]/20 rounded-full blur-3xl"
           animate={{ 
             scale: [1.2, 1, 1.2],
             opacity: [0.4, 0.7, 0.4]
@@ -211,7 +211,7 @@ const TestimonialsSection = () => {
         
         {/* Floating quote decorations */}
         <motion.div
-          className="absolute top-20 left-1/4 text-[#ec2538]/20 dark:text-[#ec2538]/30"
+          className="absolute top-20 left-1/4 text-[#00B207]/20 dark:text-[#00B207]/30"
           animate={{
             y: [0, -20, 0],
             rotate: [0, 5, 0]
@@ -225,7 +225,7 @@ const TestimonialsSection = () => {
           <Quote className="w-16 h-16" />
         </motion.div>
         <motion.div
-          className="absolute bottom-20 right-1/4 text-[#fec806]/20 dark:text-[#fec806]/30"
+          className="absolute bottom-20 right-1/4 text-[#7BC47F]/20 dark:text-[#7BC47F]/30"
           animate={{
             y: [0, -15, 0],
             rotate: [0, -5, 0]
@@ -257,9 +257,9 @@ const TestimonialsSection = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <span className="text-[#ec2538] dark:text-red-400">Testimonios</span>
+            <span className="text-[#00B207] dark:text-[#00B207]">Testimonios</span>
             <br />
-            <span className="bg-linear-to-r from-[#FF8C00] to-[#fec806] bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-[#00B207] to-[#7BC47F] bg-clip-text text-transparent">
               de nuestros clientes
             </span>
           </motion.h2>
@@ -297,7 +297,7 @@ const TestimonialsSection = () => {
                 {/* Quote icon */}
                 <motion.div
                   variants={quoteVariants}
-                  className="absolute -top-4 -left-4 w-8 h-8 bg-linear-to-r from-[#ec2538] to-[#FF8C00] rounded-full flex items-center justify-center shadow-lg dark:shadow-gray-900/25"
+                  className="absolute -top-4 -left-4 w-8 h-8 bg-linear-to-r from-[#00B207] to-[#2ECC71] rounded-full flex items-center justify-center shadow-lg dark:shadow-gray-900/25"
                 >
                   <Quote className="w-4 h-4 text-white" />
                 </motion.div>
@@ -338,7 +338,7 @@ const TestimonialsSection = () => {
                       {testimonial.productSlug ? (
                         <Link
                           href={`/products/${testimonial.productSlug}`}
-                          className="text-sm font-medium text-[#ec2538] dark:text-red-400 hover:underline truncate block"
+                          className="text-sm font-medium text-[#00B207] dark:text-[#00B207] hover:underline truncate block"
                         >
                           {testimonial.productName || "Ver producto"}
                         </Link>
@@ -374,7 +374,7 @@ const TestimonialsSection = () => {
                 </div>
 
                 {/* Hover effect overlay */}
-                <div className="absolute inset-0 bg-linear-to-r from-[#ec2538]/5 to-[#fec806]/5 dark:from-[#ec2538]/10 dark:to-[#fec806]/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-r from-[#00B207]/5 to-[#7BC47F]/5 dark:from-[#00B207]/10 dark:to-[#7BC47F]/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
               </div>
             </motion.div>
           ))}
@@ -399,7 +399,7 @@ const TestimonialsSection = () => {
           </motion.p>
           <Link href="/products">
             <motion.span
-              className="inline-flex items-center px-8 py-3 bg-linear-to-r from-[#ec2538] to-[#FF8C00] text-white font-semibold rounded-full hover:shadow-lg dark:hover:shadow-gray-900/25 transition-all duration-300 cursor-pointer"
+              className="inline-flex items-center px-8 py-3 bg-linear-to-r from-[#00B207] to-[#2ECC71] text-white font-semibold rounded-full hover:shadow-lg dark:hover:shadow-gray-900/25 transition-all duration-300 cursor-pointer"
               whileHover={{ 
                 scale: 1.05,
                 boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
