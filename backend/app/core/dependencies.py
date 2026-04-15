@@ -1,8 +1,8 @@
 """
 Dependencias de FastAPI.
 
-Define las dependencias reutilizables para la aplicación,
-especialmente para la autenticación y autorización.
+Define las dependencias reutilizables para la aplicaci?n,
+especialmente para la autenticaci?n y autorizaci?n.
 """
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -14,7 +14,7 @@ from core.config import settings
 from schemas.auth_schema import UserInToken
 from services import auth_service
 
-# Configuración del esquema de seguridad Bearer
+# Configuraci?n del esquema de seguridad Bearer
 security = HTTPBearer()
 
 
@@ -36,13 +36,13 @@ def get_current_user(
     
     Args:
         credentials: Credenciales del token Bearer
-        db: Sesión de la base de datos
+        db: Sesi?n de la base de datos
         
     Returns:
-        UserInToken: Información del usuario autenticado
+        UserInToken: Informaci?n del usuario autenticado
         
     Raises:
-        HTTPException: Si el token es inválido o el usuario no existe
+        HTTPException: Si el token es inv?lido o el usuario no existe
     """
     if settings.MOCK_MODE:
         return _mock_admin_user()
@@ -58,10 +58,10 @@ def get_current_user_optional(
     
     Args:
         credentials: Credenciales del token Bearer (opcional)
-        db: Sesión de la base de datos
+        db: Sesi?n de la base de datos
         
     Returns:
-        Optional[UserInToken]: Información del usuario autenticado o None
+        Optional[UserInToken]: Informaci?n del usuario autenticado o None
     """
     if settings.MOCK_MODE:
         return _mock_admin_user()
@@ -75,19 +75,19 @@ def get_current_user_optional(
 
 def require_role(required_role: int):
     """
-    Dependencia para verificar que el usuario tenga un rol específico.
+    Dependencia para verificar que el usuario tenga un rol espec?fico.
     
     Args:
         required_role (int): ID del rol requerido
         
     Returns:
-        function: Función de dependencia que verifica el rol
+        function: Funci?n de dependencia que verifica el rol
     """
     def role_checker(current_user: UserInToken = Depends(get_current_user)) -> UserInToken:
         if current_user.id_rol != required_role:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="No tienes permisos suficientes para realizar esta acción"
+                detail="No tienes permisos suficientes para realizar esta acci?n"
             )
         return current_user
     
@@ -103,6 +103,47 @@ def require_admin():
     """
     return require_role(1)
 
+
+def _admin_ai_chat_allows_anonymous() -> bool:
+    """
+    Chat/health IA sin JWT cuando:
+    - ADMIN_AI_PUBLIC_CHAT expl?cito, o MOCK_MODE, o
+    - entorno distinto de production (hackathon / dev local sin .env extra).
+    En production solo con ADMIN_AI_PUBLIC_CHAT=true.
+    """
+    if settings.ADMIN_AI_PUBLIC_CHAT or settings.MOCK_MODE:
+        return True
+    return str(getattr(settings, "ENVIRONMENT", "")).lower() != "production"
+
+
+def require_admin_or_ai_public_chat():
+    """
+    Admin con JWT o acceso an?nimo solo para rutas acotadas (health/chat)
+    cuando `_admin_ai_chat_allows_anonymous()` es True (usuario sint?tico).
+    """
+    def dependency(
+        credentials: Optional[HTTPAuthorizationCredentials] = Depends(
+            HTTPBearer(auto_error=False)
+        ),
+        db: Session = Depends(get_db),
+    ) -> UserInToken:
+        if _admin_ai_chat_allows_anonymous():
+            return _mock_admin_user()
+        if not credentials:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="No autenticado",
+            )
+        user = auth_service.get_current_user(db, credentials.credentials)
+        if user.id_rol != 1:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permisos suficientes para realizar esta acci?n",
+            )
+        return user
+
+    return dependency
+
 def require_user_or_admin(user_id: int):
     """
     Dependencia para verificar que el usuario sea el propietario del recurso o administrador.
@@ -111,7 +152,7 @@ def require_user_or_admin(user_id: int):
         user_id (int): ID del usuario propietario del recurso
         
     Returns:
-        function: Función de dependencia que verifica el acceso
+        function: Funci?n de dependencia que verifica el acceso
     """
     def access_checker(current_user: UserInToken = Depends(get_current_user)) -> UserInToken:
         if current_user.id_usuario != user_id and current_user.id_rol != 1:

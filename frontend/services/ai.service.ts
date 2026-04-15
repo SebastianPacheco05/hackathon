@@ -1,4 +1,5 @@
 import { get, post, getApiConfig, getStoredToken } from '@/utils/apiWrapper'
+import { isAdminAiPublicChatEnabled } from '@/lib/admin-ai-public'
 
 export interface AIHealthResponse {
   enabled: boolean
@@ -102,11 +103,13 @@ export const aiService = {
     let accumulated = ''
 
     try {
+      const sendAuth =
+        Boolean(token) && !isAdminAiPublicChatEnabled
       const res = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(sendAuth ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ message }),
       })

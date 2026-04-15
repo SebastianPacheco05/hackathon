@@ -81,6 +81,9 @@ function setupInterceptors(instance: AxiosInstance): void {
         '/discounts/active',
         '/tasa-activa',
         '/top-info-bar/active',
+        // Chat IA público (requiere ADMIN_AI_PUBLIC_CHAT en backend)
+        '/admin/ai/health',
+        '/admin/ai/chat',
       ];
       const isPublicEndpoint = publicEndpoints.some(endpoint => 
         config.url?.includes(endpoint)
@@ -136,6 +139,8 @@ function setupInterceptors(instance: AxiosInstance): void {
         '/comentaries/testimonials',
         '/discounts/active',
         '/tasa-activa',
+        '/admin/ai/health',
+        '/admin/ai/chat',
       ];
       const isPublicEndpoint = publicEndpoints.some(endpoint =>
         originalRequest.url?.includes(endpoint)

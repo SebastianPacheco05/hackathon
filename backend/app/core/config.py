@@ -97,6 +97,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     OPENAI_MODEL: str = "gpt-4o-mini"
 
+    # Chat IA sin JWT: fuerza acceso anónimo también en production si es True.
+    # En development/staging el acceso anónimo a health/chat/stream ya está
+    # permitido por defecto (ver require_admin_or_ai_public_chat).
+    ADMIN_AI_PUBLIC_CHAT: bool = False
+
     # Cloudflare Turnstile (CAPTCHA) - verificación del lado servidor.
     # Si no está configurado, el backend no valida el captcha y se considera deshabilitado.
     TURNSTILE_SECRET_KEY: Optional[str] = None

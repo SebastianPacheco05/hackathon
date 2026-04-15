@@ -39,7 +39,7 @@ const CodeHeader: FC<CodeHeaderProps> = ({ language, code }) => {
       <span className="aui-code-header-language font-medium text-muted-foreground lowercase">
         {language}
       </span>
-      <TooltipIconButton tooltip="Copy" onClick={onCopy}>
+      <TooltipIconButton tooltip="Copiar" onClick={onCopy}>
         {!isCopied && <CopyIcon />}
         {isCopied && <CheckIcon />}
       </TooltipIconButton>

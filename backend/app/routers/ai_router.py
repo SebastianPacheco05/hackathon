@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 import time
 
 from core.database import get_db
-from core.dependencies import require_admin, UserInToken
+from core.dependencies import require_admin, require_admin_or_ai_public_chat, UserInToken
 from core.exceptions import get_safe_message, MSG_SERVICE_UNAVAILABLE, MSG_BAD_GATEWAY
 from services.groq_service import is_groq_available, DEFAULT_MODEL
 from core.config import settings
@@ -34,7 +34,7 @@ router = APIRouter(tags=["AI Admin"])
 
 @router.get("/admin/ai/health", status_code=status.HTTP_200_OK)
 async def get_ai_health(
-    current_user: UserInToken = Depends(require_admin()),
+    current_user: UserInToken = Depends(require_admin_or_ai_public_chat()),
 ):
     """Indica si la IA está disponible y el modelo en uso. Solo administradores."""
     if settings.MOCK_MODE:
@@ -171,7 +171,7 @@ async def get_ai_business_insights(
 async def post_ai_chat(
     body: dict,
     db: Session = Depends(get_db),
-    current_user: UserInToken = Depends(require_admin()),
+    current_user: UserInToken = Depends(require_admin_or_ai_public_chat()),
 ):
     """Chat con el asistente de IA (respuesta completa). Solo administradores."""
     if settings.MOCK_MODE:
@@ -213,7 +213,7 @@ async def post_ai_chat(
 async def post_ai_chat_stream(
     body: dict,
     db: Session = Depends(get_db),
-    current_user: UserInToken = Depends(require_admin()),
+    current_user: UserInToken = Depends(require_admin_or_ai_public_chat()),
 ):
     """Chat con streaming (SSE). Solo administradores."""
     if settings.MOCK_MODE:

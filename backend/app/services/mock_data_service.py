@@ -946,7 +946,7 @@ def get_analytics_data() -> dict[str, Any]:
 
 
 def ai_health() -> dict[str, Any]:
-    return {"enabled": True, "model": "mock-ai-v1"}
+    return {"enabled": True, "model": "agrosale-ai-v1"}
 
 
 def ai_summary(time_range: str = "monthly") -> dict[str, Any]:
@@ -972,7 +972,7 @@ def ai_chat_reply(message: str) -> dict[str, Any]:
     if "categoria" in msg:
         return {"reply": "La categoría líder es Electrónica (45.8% de ingresos), seguida de Moda (23.4%)."}
     return {
-        "reply": "Modo mock activo: puedo responder sobre ventas, productos, stock, categorías y recomendaciones operativas."
+        "reply": "Puedo responder sobre ventas, productos, stock, categorías y recomendaciones operativas."
     }
 
 
@@ -994,7 +994,7 @@ def ai_business_payload(kind: str) -> dict[str, Any]:
         return base
     if kind == "production":
         base["summary"] = "Se recomienda incrementar producción/reposición en SKUs de rotación alta."
-        base["data"] = {"safety_factor": 1.15, "priority_skus": ["MOCK-106", "MOCK-101", "MOCK-109"]}
+        base["data"] = {"safety_factor": 1.15, "priority_skus": ["SKU-106", "SKU-101", "SKU-109"]}
         base["recommendations"] = ["Ejecutar compra semanal para SKUs prioritarios", "Revisar lead times de proveedor Tech Supplies SAS"]
         return base
     if kind == "anomalies":

@@ -110,7 +110,6 @@ export function AdminDecisionCenterChat() {
           },
         })
 
-        let prevLen = 0
         while (true) {
           if (!updates.length) await waitForUpdate()
           if (abortSignal.aborted) return
@@ -129,10 +128,9 @@ export function AdminDecisionCenterChat() {
           }
           if (item.type === 'done') break
           if (item.type === 'chunk') {
-            const delta = item.accumulated.slice(prevLen)
-            prevLen = item.accumulated.length
-            if (delta) {
-              yield { content: [{ type: 'text', text: delta }] }
+            if (item.accumulated) {
+              // assistant-ui espera el snapshot acumulado del mensaje en cada update.
+              yield { content: [{ type: 'text', text: item.accumulated }] }
             }
           }
         }
@@ -145,8 +143,10 @@ export function AdminDecisionCenterChat() {
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <div className="flex h-[min(72vh,40rem)] min-h-[380px] w-full flex-col overflow-hidden rounded-xl border bg-card shadow-sm">
-        <Thread />
+      <div
+        className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl border border-border/60 bg-muted/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:border-border/50 dark:bg-muted/10 dark:shadow-[0_8px_30px_rgb(0,0,0,0.25)]"
+      >
+        <Thread contentMaxWidth="min(64rem, 100%)" />
       </div>
     </AssistantRuntimeProvider>
   )

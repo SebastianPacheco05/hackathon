@@ -1,3 +1,5 @@
+"use client";
+
 import {
   ComposerAddAttachment,
   ComposerAttachments,
@@ -16,8 +18,8 @@ import {
   ComposerPrimitive,
   ErrorPrimitive,
   MessagePrimitive,
-  SuggestionPrimitive,
   ThreadPrimitive,
+  useAui,
   useAuiState,
 } from "@assistant-ui/react";
 import {
@@ -35,19 +37,101 @@ import {
 } from "lucide-react";
 import type { FC } from "react";
 
-export const Thread: FC = () => {
+/** Prompts tipo ChatGPT / español — alineados con capacidades del asistente admin. */
+const EXAMPLE_PROMPTS: ReadonlyArray<{
+  title: string
+  description: string
+  message: string
+}> = [
+  {
+    title: "Ventas y tendencias",
+    description: "Resumen rápido del rendimiento",
+    message:
+      "¿Cómo van las ventas últimos días y qué productos o categorías destacan?",
+  },
+  {
+    title: "Demanda prevista",
+    description: "Heurística de demanda",
+    message:
+      "Predice la demanda para los próximos 30 días y dime la tendencia con el nivel de confianza.",
+  },
+  {
+    title: "Producción e inventario",
+    description: "Qué reponer o producir",
+    message:
+      "¿Qué productos debería priorizar en producción o reposición según demanda y stock?",
+  },
+  {
+    title: "Anomalías",
+    description: "Picos, caídas o baja rotación",
+    message:
+      "Detecta anomalías en ventas o rotación y qué acciones recomiendas.",
+  },
+  {
+    title: "Exportación",
+    description: "Preparación para nuevos mercados",
+    message:
+      "Analiza la preparación para exportación: candidatos, mercados sugeridos y próximos pasos.",
+  },
+  {
+    title: "Vista unificada",
+    description: "Todo en un solo informe",
+    message:
+      "Dame un resumen ejecutivo con insights de negocio: demanda, producción, riesgos y exportación.",
+  },
+]
+
+const ExamplePrompts: FC = () => {
+  const api = useAui()
+  const isEmpty = useAuiState((s) => s.thread.isEmpty)
+  const isRunning = useAuiState((s) => s.thread.isRunning)
+
+  if (!isEmpty || isRunning) return null
+
+  return (
+    <div className="aui-thread-welcome-suggestions grid w-full grid-cols-1 gap-2 pb-4 @md:grid-cols-2">
+      {EXAMPLE_PROMPTS.map((p) => (
+        <button
+          key={p.title}
+          type="button"
+          className="aui-thread-welcome-suggestion fade-in slide-in-from-bottom-2 @md:nth-[n+5]:block nth-[n+5]:hidden animate-in fill-mode-both flex h-auto w-full flex-col items-start gap-1 rounded-3xl border bg-background px-4 py-3 text-left text-sm shadow-sm transition-colors hover:bg-muted/80"
+          onClick={() => {
+            const thread = api.thread()
+            thread.append({
+              role: "user",
+              content: [{ type: "text", text: p.message }],
+            })
+            thread.startRun({ parentId: null })
+          }}
+        >
+          <span className="font-medium">{p.title}</span>
+          <span className="text-muted-foreground text-xs">{p.description}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+export type ThreadProps = {
+  /** Ancho máximo del hilo (CSS). Por defecto ~ChatGPT estrecho; `full` usa casi todo el contenedor. */
+  contentMaxWidth?: string
+}
+
+export const Thread: FC<ThreadProps> = ({
+  contentMaxWidth = "42rem",
+}) => {
   return (
     <ThreadPrimitive.Root
-      className="aui-root aui-thread-root @container flex h-full flex-col bg-background"
+      className="aui-root aui-thread-root @container flex h-full min-h-0 flex-col bg-transparent"
       style={{
-        ["--thread-max-width" as string]: "44rem",
-        ["--composer-radius" as string]: "24px",
-        ["--composer-padding" as string]: "10px",
+        ["--thread-max-width" as string]: contentMaxWidth,
+        ["--composer-radius" as string]: "28px",
+        ["--composer-padding" as string]: "12px",
       }}
     >
       <ThreadPrimitive.Viewport
         turnAnchor="top"
-        className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
+        className="aui-thread-viewport relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain px-4 pt-4"
       >
         <AuiIf condition={(s) => s.thread.isEmpty}>
           <ThreadWelcome />
@@ -56,12 +140,12 @@ export const Thread: FC = () => {
         <ThreadPrimitive.Messages>
           {() => <ThreadMessage />}
         </ThreadPrimitive.Messages>
-
-        <ThreadPrimitive.ViewportFooter className="aui-thread-viewport-footer sticky bottom-0 mx-auto mt-auto flex w-full max-w-(--thread-max-width) flex-col gap-4 overflow-visible rounded-t-(--composer-radius) bg-background pb-4 md:pb-6">
-          <ThreadScrollToBottom />
-          <Composer />
-        </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
+
+      <div className="aui-thread-footer relative mx-auto w-full max-w-(--thread-max-width) shrink-0 bg-background px-4 pb-4 md:pb-6">
+        <ThreadScrollToBottom />
+        <Composer />
+      </div>
     </ThreadPrimitive.Root>
   );
 };
@@ -78,7 +162,7 @@ const ThreadScrollToBottom: FC = () => {
   return (
     <ThreadPrimitive.ScrollToBottom asChild>
       <TooltipIconButton
-        tooltip="Scroll to bottom"
+        tooltip="Ir al final"
         variant="outline"
         className="aui-thread-scroll-to-bottom absolute -top-12 z-10 self-center rounded-full p-4 disabled:invisible dark:border-border dark:bg-background dark:hover:bg-accent"
       >
@@ -90,44 +174,19 @@ const ThreadScrollToBottom: FC = () => {
 
 const ThreadWelcome: FC = () => {
   return (
-    <div className="aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) grow flex-col">
-      <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
-        <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-4">
-          <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both font-semibold text-2xl duration-200">
-            Hello there!
+    <div className="aui-thread-welcome-root mx-auto flex w-full max-w-(--thread-max-width) shrink-0 flex-col">
+      <div className="aui-thread-welcome-center flex w-full flex-col items-center justify-center py-6">
+        <div className="aui-thread-welcome-message flex w-full max-w-lg flex-col justify-center px-4 text-center @md:max-w-xl">
+          <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both font-semibold text-3xl tracking-tight duration-200">
+            ¿En qué te ayudo hoy?
           </h1>
-          <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-muted-foreground text-xl delay-75 duration-200">
-            How can I help you today?
+          <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both mt-2 text-muted-foreground text-lg delay-75 duration-200">
+            Pregunta por ventas, demanda, stock, anomalías o exportación. También
+            puedes pedir acciones en el panel cuando el asistente lo permita.
           </p>
         </div>
       </div>
-      <ThreadSuggestions />
-    </div>
-  );
-};
-
-const ThreadSuggestions: FC = () => {
-  return (
-    <div className="aui-thread-welcome-suggestions grid w-full @md:grid-cols-2 gap-2 pb-4">
-      <ThreadPrimitive.Suggestions>
-        {() => <ThreadSuggestionItem />}
-      </ThreadPrimitive.Suggestions>
-    </div>
-  );
-};
-
-const ThreadSuggestionItem: FC = () => {
-  return (
-    <div className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 @md:nth-[n+3]:block nth-[n+3]:hidden animate-in fill-mode-both duration-200">
-      <SuggestionPrimitive.Trigger send asChild>
-        <Button
-          variant="ghost"
-          className="aui-thread-welcome-suggestion h-auto w-full @md:flex-col flex-wrap items-start justify-start gap-1 rounded-3xl border bg-background px-4 py-3 text-left text-sm transition-colors hover:bg-muted"
-        >
-          <SuggestionPrimitive.Title className="aui-thread-welcome-suggestion-text-1 font-medium" />
-          <SuggestionPrimitive.Description className="aui-thread-welcome-suggestion-text-2 text-muted-foreground empty:hidden" />
-        </Button>
-      </SuggestionPrimitive.Trigger>
+      <ExamplePrompts />
     </div>
   );
 };
@@ -142,11 +201,11 @@ const Composer: FC = () => {
         >
           <ComposerAttachments />
           <ComposerPrimitive.Input
-            placeholder="Send a message..."
+            placeholder="Escribe un mensaje…"
             className="aui-composer-input max-h-32 min-h-10 w-full resize-none bg-transparent px-1.75 py-1 text-sm outline-none placeholder:text-muted-foreground/80"
             rows={1}
             autoFocus
-            aria-label="Message input"
+            aria-label="Campo de mensaje"
           />
           <ComposerAction />
         </div>
@@ -162,13 +221,13 @@ const ComposerAction: FC = () => {
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>
           <TooltipIconButton
-            tooltip="Send message"
+            tooltip="Enviar mensaje"
             side="bottom"
             type="button"
             variant="default"
             size="icon"
             className="aui-composer-send size-8 rounded-full"
-            aria-label="Send message"
+            aria-label="Enviar mensaje"
           >
             <ArrowUpIcon className="aui-composer-send-icon size-4" />
           </TooltipIconButton>
@@ -181,7 +240,7 @@ const ComposerAction: FC = () => {
             variant="default"
             size="icon"
             className="aui-composer-cancel size-8 rounded-full"
-            aria-label="Stop generating"
+            aria-label="Detener generación"
           >
             <SquareIcon className="aui-composer-cancel-icon size-3 fill-current" />
           </Button>
@@ -235,7 +294,7 @@ const AssistantActionBar: FC = () => {
       className="aui-assistant-action-bar-root col-start-3 row-start-2 -ml-1 flex gap-1 text-muted-foreground"
     >
       <ActionBarPrimitive.Copy asChild>
-        <TooltipIconButton tooltip="Copy">
+        <TooltipIconButton tooltip="Copiar">
           <AuiIf condition={(s) => s.message.isCopied}>
             <CheckIcon />
           </AuiIf>
@@ -245,14 +304,14 @@ const AssistantActionBar: FC = () => {
         </TooltipIconButton>
       </ActionBarPrimitive.Copy>
       <ActionBarPrimitive.Reload asChild>
-        <TooltipIconButton tooltip="Refresh">
+        <TooltipIconButton tooltip="Regenerar">
           <RefreshCwIcon />
         </TooltipIconButton>
       </ActionBarPrimitive.Reload>
       <ActionBarMorePrimitive.Root>
         <ActionBarMorePrimitive.Trigger asChild>
           <TooltipIconButton
-            tooltip="More"
+            tooltip="Más"
             className="data-[state=open]:bg-accent"
           >
             <MoreHorizontalIcon />
@@ -266,7 +325,7 @@ const AssistantActionBar: FC = () => {
           <ActionBarPrimitive.ExportMarkdown asChild>
             <ActionBarMorePrimitive.Item className="aui-action-bar-more-item flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
               <DownloadIcon className="size-4" />
-              Export as Markdown
+              Exportar como Markdown
             </ActionBarMorePrimitive.Item>
           </ActionBarPrimitive.ExportMarkdown>
         </ActionBarMorePrimitive.Content>
@@ -305,7 +364,7 @@ const UserActionBar: FC = () => {
       className="aui-user-action-bar-root flex flex-col items-end"
     >
       <ActionBarPrimitive.Edit asChild>
-        <TooltipIconButton tooltip="Edit" className="aui-user-action-edit p-4">
+        <TooltipIconButton tooltip="Editar" className="aui-user-action-edit p-4">
           <PencilIcon />
         </TooltipIconButton>
       </ActionBarPrimitive.Edit>
@@ -324,11 +383,11 @@ const EditComposer: FC = () => {
         <div className="aui-edit-composer-footer mx-3 mb-3 flex items-center gap-2 self-end">
           <ComposerPrimitive.Cancel asChild>
             <Button variant="ghost" size="sm">
-              Cancel
+              Cancelar
             </Button>
           </ComposerPrimitive.Cancel>
           <ComposerPrimitive.Send asChild>
-            <Button size="sm">Update</Button>
+            <Button size="sm">Actualizar</Button>
           </ComposerPrimitive.Send>
         </div>
       </ComposerPrimitive.Root>
@@ -350,7 +409,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
       {...rest}
     >
       <BranchPickerPrimitive.Previous asChild>
-        <TooltipIconButton tooltip="Previous">
+        <TooltipIconButton tooltip="Anterior">
           <ChevronLeftIcon />
         </TooltipIconButton>
       </BranchPickerPrimitive.Previous>
@@ -358,7 +417,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
         <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
       </span>
       <BranchPickerPrimitive.Next asChild>
-        <TooltipIconButton tooltip="Next">
+        <TooltipIconButton tooltip="Siguiente">
           <ChevronRightIcon />
         </TooltipIconButton>
       </BranchPickerPrimitive.Next>
