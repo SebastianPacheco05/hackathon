@@ -254,14 +254,14 @@ def _get_product_performance_by_category(db: Session) -> List[Dict[str, Any]]:
         previous_start = start_date - timedelta(days=30)
         previous_end = start_date
         
-        # Primero obtener todas las categorías activas (tab_categories)
+        # Primero obtener todas las categorías activas (tab_categorias)
         categories_query = text("""
             SELECT 
-                c.id AS id_categoria, 
-                c.name AS nom_categoria
-            FROM tab_categories c
-            WHERE c.is_active = TRUE
-            ORDER BY c.name
+                c.id_categoria,
+                c.nom_categoria
+            FROM tab_categorias c
+            WHERE c.ind_activo = TRUE
+            ORDER BY c.nom_categoria
         """)
         categories_result = db.execute(categories_query)
         all_categories = {}
@@ -277,10 +277,10 @@ def _get_product_performance_by_category(db: Session) -> List[Dict[str, Any]]:
             return []
         
         # Luego obtener ventas por categoría desde órdenes (LEFT JOIN para incluir todas las categorías)
-        # Nuevo esquema: tab_categories + tab_products + variantes + tab_orden_productos
+        # Nuevo esquema: tab_categorias + tab_productos + variantes + tab_orden_productos
         sales_query = text("""
             SELECT 
-                c.id AS id_categoria,
+                c.id_categoria,
                 COALESCE(SUM(op.subtotal) FILTER (
                     WHERE o.fec_pedido >= :start_date 
                     AND o.fec_pedido <= :end_date
@@ -291,22 +291,22 @@ def _get_product_performance_by_category(db: Session) -> List[Dict[str, Any]]:
                     AND o.fec_pedido <= :prev_end
                     AND o.ind_estado IN (2, 3)
                 ), 0) as ingresos_anteriores
-            FROM tab_categories c
-            LEFT JOIN tab_products p 
-                ON p.category_id = c.id 
-                AND p.is_active = TRUE
-            LEFT JOIN tab_product_variant_groups g 
-                ON g.product_id = p.id
-            LEFT JOIN tab_product_variant_combinations pv 
-                ON pv.group_id = g.id 
-                AND pv.is_active = TRUE
+            FROM tab_categorias c
+            LEFT JOIN tab_productos p 
+                ON p.id_categoria = c.id_categoria
+                AND p.ind_activo = TRUE
+            LEFT JOIN tab_grupos_variante_producto g 
+                ON g.id_producto = p.id_producto
+            LEFT JOIN tab_combinaciones_variante_producto pv 
+                ON pv.id_grupo_variante = g.id_grupo_variante 
+                AND pv.ind_activo = TRUE
             LEFT JOIN tab_orden_productos op 
-                ON op.variant_id = pv.id
+                ON op.id_combinacion_variante = pv.id_combinacion_variante
             LEFT JOIN tab_ordenes o 
                 ON op.id_orden = o.id_orden 
                 AND o.ind_estado IN (2, 3)
-            WHERE c.is_active = TRUE
-            GROUP BY c.id
+            WHERE c.ind_activo = TRUE
+            GROUP BY c.id_categoria
         """)
         
         sales_result = db.execute(sales_query, {
@@ -378,29 +378,29 @@ def _get_product_metrics(db: Session) -> Dict[str, Any]:
     query = text("""
         WITH product_data AS (
             SELECT
-                p.id,
-                p.is_active,
+                p.id_producto,
+                p.ind_activo,
                 COALESCE((
-                    SELECT SUM(c.stock)
-                    FROM tab_product_variant_groups g
-                    JOIN tab_product_variant_combinations c ON c.group_id = g.id
-                    WHERE g.product_id = p.id
-                      AND c.is_active = TRUE
+                    SELECT SUM(c.cant_stock)
+                    FROM tab_grupos_variante_producto g
+                    JOIN tab_combinaciones_variante_producto c ON c.id_grupo_variante = g.id_grupo_variante
+                    WHERE g.id_producto = p.id_producto
+                      AND c.ind_activo = TRUE
                 ), 0) AS stock_total,
                 (
-                    SELECT MIN(c.price)
-                    FROM tab_product_variant_groups g
-                    JOIN tab_product_variant_combinations c ON c.group_id = g.id
-                    WHERE g.product_id = p.id
-                      AND c.is_active = TRUE
+                    SELECT MIN(c.precio)
+                    FROM tab_grupos_variante_producto g
+                    JOIN tab_combinaciones_variante_producto c ON c.id_grupo_variante = g.id_grupo_variante
+                    WHERE g.id_producto = p.id_producto
+                      AND c.ind_activo = TRUE
                 ) AS price_min
-            FROM tab_products p
+            FROM tab_productos p
         )
         SELECT 
-            COUNT(*) FILTER (WHERE is_active = TRUE) as productos_activos,
-            COUNT(*) FILTER (WHERE is_active = FALSE) as productos_inactivos,
-            COUNT(*) FILTER (WHERE stock_total = 0 AND is_active = TRUE) as sin_stock,
-            AVG(price_min) FILTER (WHERE is_active = TRUE) as precio_promedio
+            COUNT(*) FILTER (WHERE ind_activo = TRUE) as productos_activos,
+            COUNT(*) FILTER (WHERE ind_activo = FALSE) as productos_inactivos,
+            COUNT(*) FILTER (WHERE stock_total = 0 AND ind_activo = TRUE) as sin_stock,
+            AVG(price_min) FILTER (WHERE ind_activo = TRUE) as precio_promedio
         FROM product_data
     """)
     
@@ -439,14 +439,14 @@ def _get_product_metrics(db: Session) -> Dict[str, Any]:
         extras_query = text("""
             SELECT
                 (
-                    SELECT COUNT(DISTINCT category_id)::int
-                    FROM tab_products
-                    WHERE is_active = TRUE AND category_id IS NOT NULL
+                    SELECT COUNT(DISTINCT id_categoria)::int
+                    FROM tab_productos
+                    WHERE ind_activo = TRUE AND id_categoria IS NOT NULL
                 ) AS categorias_activas,
                 (
                     SELECT COUNT(1)::int
-                    FROM tab_product_variant_combinations
-                    WHERE is_active = TRUE
+                    FROM tab_combinaciones_variante_producto
+                    WHERE ind_activo = TRUE
                 ) AS variantes_activas
         """)
         extras_row = db.execute(extras_query).mappings().first() or {}

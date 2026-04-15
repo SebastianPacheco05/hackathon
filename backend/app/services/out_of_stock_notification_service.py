@@ -123,16 +123,16 @@ def notify_after_order_paid_stock_change(db: Session, id_orden: Decimal) -> None
             text(
                 """
                 SELECT
-                    p.id AS product_id,
-                    p.name AS product_name,
-                    c.id AS variant_id,
-                    COALESCE(NULLIF(TRIM(c.sku), ''), '') AS sku,
-                    c.stock AS new_stock,
+                    p.id_producto AS product_id,
+                    p.nom_producto AS product_name,
+                    c.id_combinacion_variante AS variant_id,
+                    COALESCE(NULLIF(TRIM(c.cod_sku), ''), '') AS sku,
+                    c.cant_stock AS new_stock,
                     op.cant_producto AS qty_sold
                 FROM tab_orden_productos op
-                JOIN tab_product_variant_combinations c ON c.id = op.variant_id
-                JOIN tab_product_variant_groups g ON g.id = c.group_id
-                JOIN tab_products p ON p.id = g.product_id
+                JOIN tab_combinaciones_variante_producto c ON c.id_combinacion_variante = op.id_combinacion_variante
+                JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante
+                JOIN tab_productos p ON p.id_producto = g.id_producto
                 WHERE op.id_orden = :oid
                 """
             ),

@@ -7,7 +7,7 @@
  * PARÁMETROS:
  *   - wid_proveedor: ID del proveedor a actualizar (obligatorio, > 0)
  *   - wnom_proveedor: Nuevo nombre del proveedor (obligatorio, mínimo 3 caracteres)
- *   - wemail: Nuevo email del proveedor (obligatorio, mínimo 3 caracteres)
+ *   - wemail: Nuevo email_usuario del proveedor (obligatorio, mínimo 3 caracteres)
  *   - wtel_proveedor: Nuevo número de teléfono (obligatorio, > 0)
  *   - wind_activo: Nuevo estado activo (opcional, mantiene actual si es NULL)
  *   - wusr_operacion: Usuario que realiza la operación para auditoría (obligatorio, mínimo 3 caracteres)
@@ -17,7 +17,7 @@
  * LÓGICA:
  *   1. Validar ID del proveedor
  *   2. Validar nombre del proveedor
- *   3. Validar email del proveedor
+ *   3. Validar email_usuario del proveedor
  *   4. Validar teléfono del proveedor
  *   5. Validar usuario operación para auditoría
  *   6. Actualizar registro con nueva información
@@ -34,7 +34,7 @@
 CREATE OR REPLACE FUNCTION fun_update_proveedores(
     wid_proveedor tab_proveedores.id_proveedor%TYPE,
     wnom_proveedor tab_proveedores.nom_proveedor%TYPE,
-    wemail tab_proveedores.email%TYPE,
+    wemail tab_proveedores.correo_proveedor%TYPE,
     wtel_proveedor tab_proveedores.tel_proveedor%TYPE,
     wind_activo tab_proveedores.ind_activo%TYPE,
     wusr_operacion tab_proveedores.usr_update%TYPE
@@ -53,7 +53,7 @@ $$
 
         -- VALIDACIÓN 3: Email del proveedor
         IF wemail IS NULL OR wemail = '' OR LENGTH(TRIM(wemail)) < 3 THEN
-            RETURN 'Error: El email del proveedor es obligatorio y debe tener al menos 3 caracteres.';
+            RETURN 'Error: El email_usuario del proveedor es obligatorio y debe tener al menos 3 caracteres.';
         END IF;
 
         -- VALIDACIÓN 4: Teléfono del proveedor
@@ -69,7 +69,7 @@ $$
         -- ACTUALIZACIÓN: Modificar información del proveedor existente
         UPDATE tab_proveedores SET 
             nom_proveedor = wnom_proveedor,                         -- Nuevo nombre
-            email = wemail,                                         -- Nuevo email
+            correo_proveedor = wemail,                              -- Nuevo email_usuario
             tel_proveedor = wtel_proveedor,                         -- Nuevo teléfono
             ind_activo = COALESCE(wind_activo, ind_activo),         -- Nuevo estado (mantiene actual si NULL)
             usr_update = wusr_operacion,                            -- ID del usuario que actualiza

@@ -15,7 +15,7 @@
  * 
  * LÓGICA:
  *   1. Validar nombre del proveedor
- *   2. Validar email del proveedor
+ *   2. Validar email_usuario del proveedor
  *   3. Validar teléfono del proveedor
  *   4. Validar ID de usuario operación para auditoría
  *   5. Generar ID secuencial automático
@@ -23,7 +23,7 @@
  *   7. Confirmar éxito de la operación
  * 
  * MANEJO DE ERRORES:
- *   - SQLSTATE '23505': Violación de unicidad (email ya existe)
+ *   - SQLSTATE '23505': Violación de unicidad (email_usuario ya existe)
  *   - OTHERS: Cualquier otra excepción con ROLLBACK
  * 
  * AUTOR: Sistema DB_Revital
@@ -31,7 +31,7 @@
  */
 CREATE OR REPLACE FUNCTION fun_insert_proveedores(
     wnom_proveedor tab_proveedores.nom_proveedor%TYPE,
-    wemail tab_proveedores.email%TYPE,
+    wemail tab_proveedores.correo_proveedor%TYPE,
     wtel_proveedor tab_proveedores.tel_proveedor%TYPE,
     wusr_operacion tab_proveedores.usr_insert%TYPE 
 ) RETURNS VARCHAR AS
@@ -44,7 +44,7 @@ $$
 
         -- VALIDACIÓN 2: Email del proveedor
         IF wemail IS NULL OR wemail = '' OR LENGTH(TRIM(wemail)) < 3 THEN
-            RETURN 'Error: El email del proveedor es obligatorio y debe tener al menos 3 caracteres.';
+            RETURN 'Error: El email_usuario del proveedor es obligatorio y debe tener al menos 3 caracteres.';
         END IF;
 
         -- VALIDACIÓN 3: Teléfono del proveedor
@@ -58,7 +58,7 @@ $$
         END IF;
 
         -- INSERCIÓN: Crear nuevo proveedor con ID secuencial
-        INSERT INTO tab_proveedores (id_proveedor, nom_proveedor, email, tel_proveedor, usr_insert)
+        INSERT INTO tab_proveedores (id_proveedor, nom_proveedor, correo_proveedor, tel_proveedor, usr_insert)
         VALUES (
             (SELECT COALESCE(MAX(tp.id_proveedor), 0) + 1 FROM tab_proveedores tp),  -- ID secuencial automático
             wnom_proveedor,                                     -- Nombre del proveedor
@@ -79,7 +79,7 @@ $$
     -- MANEJO DE ERRORES: Capturar excepciones específicas
     EXCEPTION
         WHEN SQLSTATE '23505' THEN
-            RETURN 'Error: El email del proveedor ya existe en el sistema.';
+            RETURN 'Error: El email_usuario del proveedor ya existe en el sistema.';
         WHEN OTHERS THEN
             RETURN 'Error inesperado: ' || SQLERRM;
             ROLLBACK;

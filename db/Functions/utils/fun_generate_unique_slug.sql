@@ -1,6 +1,6 @@
 /*
- * Genera un slug único a partir de un nombre.
- * Uso: categorías y productos. p_table = 'tab_categories' o 'tab_products'.
+ * Genera un slug_producto único a partir de un nombre.
+ * Uso: categorías y productos. p_table = 'tab_categorias' o 'tab_productos'.
  * p_exclude_id: al actualizar, excluir ese id del chequeo de unicidad.
  */
 CREATE OR REPLACE FUNCTION fun_generate_unique_slug(
@@ -26,10 +26,10 @@ BEGIN
     END IF;
     candidate := base;
     LOOP
-        IF p_table = 'tab_categories' THEN
-            SELECT EXISTS(SELECT 1 FROM tab_categories WHERE slug = candidate AND (p_exclude_id IS NULL OR id != p_exclude_id)) INTO found;
-        ELSIF p_table = 'tab_products' THEN
-            SELECT EXISTS(SELECT 1 FROM tab_products WHERE slug = candidate AND (p_exclude_id IS NULL OR id != p_exclude_id)) INTO found;
+        IF p_table = 'tab_categorias' THEN
+            SELECT EXISTS(SELECT 1 FROM tab_categorias WHERE slug_producto = candidate AND (p_exclude_id IS NULL OR id != p_exclude_id)) INTO found;
+        ELSIF p_table = 'tab_productos' THEN
+            SELECT EXISTS(SELECT 1 FROM tab_productos WHERE slug_producto = candidate AND (p_exclude_id IS NULL OR id != p_exclude_id)) INTO found;
         ELSE
             RAISE EXCEPTION 'fun_generate_unique_slug: tabla no soportada %', p_table;
         END IF;
@@ -39,7 +39,7 @@ BEGIN
         i := i + 1;
         candidate := base || '-' || i;
         IF i > 9999 THEN
-            RAISE EXCEPTION 'fun_generate_unique_slug: no se pudo generar slug único';
+            RAISE EXCEPTION 'fun_generate_unique_slug: no se pudo generar slug_producto único';
         END IF;
     END LOOP;
 END;

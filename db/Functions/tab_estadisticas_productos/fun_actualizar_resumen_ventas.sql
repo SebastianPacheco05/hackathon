@@ -1,5 +1,5 @@
 /*
- * Actualiza tab_estadisticas_productos por product_id (modelo products/product_variants).
+ * Actualiza tab_estadisticas_productos por id_producto (modelo products/product_variants).
  * Parámetros: p_id_categoria (opcional), p_id_producto (opcional), p_recalcular_todo.
  */
 CREATE OR REPLACE FUNCTION fun_actualizar_resumen_ventas(
@@ -17,21 +17,21 @@ DECLARE
     v_precio_min DECIMAL(12,2);
 BEGIN
     FOR v_rec IN
-        SELECT DISTINCT p.id AS product_id
+        SELECT DISTINCT p.id_producto AS id_producto
         FROM tab_orden_productos op
-        JOIN tab_product_variant_combinations pv ON pv.id = op.variant_id
-        JOIN tab_product_variant_groups g ON g.id = pv.group_id
-        JOIN tab_products p ON p.id = g.product_id
+        JOIN tab_combinaciones_variante_producto pv ON pv.id_combinacion_variante = op.id_combinacion_variante
+        JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = pv.id_grupo_variante
+        JOIN tab_productos p ON p.id_producto = g.id_producto
         JOIN tab_ordenes o ON op.id_orden = o.id_orden
         WHERE o.ind_estado IN (2, 3)
-          AND (p_recalcular_todo OR (p_id_categoria IS NULL OR p.category_id = p_id_categoria)
-               AND (p_id_producto IS NULL OR p.id = p_id_producto))
+          AND (p_recalcular_todo OR (p_id_categoria IS NULL OR p.id_categoria = p_id_categoria)
+               AND (p_id_producto IS NULL OR p.id_producto = p_id_producto))
     LOOP
         SELECT
-            p.name,
-            (SELECT MIN(c.price) FROM tab_product_variant_combinations c JOIN tab_product_variant_groups g ON g.id = c.group_id WHERE g.product_id = p.id AND c.is_active),
-            (SELECT COALESCE(SUM(c.stock), 0) FROM tab_product_variant_combinations c JOIN tab_product_variant_groups g ON g.id = c.group_id WHERE g.product_id = p.id AND c.is_active),
-            p.is_active,
+            p.nom_producto,
+            (SELECT MIN(c.precio) FROM tab_combinaciones_variante_producto c JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante WHERE g.id_producto = p.id_producto AND c.ind_activo),
+            (SELECT COALESCE(SUM(c.cant_stock), 0) FROM tab_combinaciones_variante_producto c JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante WHERE g.id_producto = p.id_producto AND c.ind_activo),
+            p.ind_activo,
             COUNT(DISTINCT o.id_orden),
             COALESCE(SUM(op.cant_producto), 0),
             COALESCE(SUM(op.cant_producto * op.precio_unitario_orden), 0),
@@ -49,16 +49,16 @@ BEGIN
              v_rec.ventas_mes_actual, v_rec.ingresos_mes_actual, v_rec.ventas_mes_anterior, v_rec.ingresos_mes_anterior,
              v_rec.fecha_primera_venta, v_rec.fecha_ultima_venta, v_rec.precio_promedio_venta,
              v_rec.promedio_venta_mensual, v_rec.promedio_ingreso_mensual
-        FROM tab_products p
-        LEFT JOIN tab_product_variant_groups g ON g.product_id = p.id
-        LEFT JOIN tab_product_variant_combinations pv ON pv.group_id = g.id
-        LEFT JOIN tab_orden_productos op ON op.variant_id = pv.id
+        FROM tab_productos p
+        LEFT JOIN tab_grupos_variante_producto g ON g.id_producto = p.id_producto
+        LEFT JOIN tab_combinaciones_variante_producto pv ON pv.id_grupo_variante = g.id_grupo_variante
+        LEFT JOIN tab_orden_productos op ON op.id_combinacion_variante = pv.id
         LEFT JOIN tab_ordenes o ON op.id_orden = o.id_orden AND o.ind_estado IN (2, 3)
-        WHERE p.id = v_rec.product_id
-        GROUP BY p.id, p.name, p.is_active;
+        WHERE p.id_producto = v_rec.id_producto
+        GROUP BY p.id_producto, p.nom_producto, p.ind_activo;
 
         INSERT INTO tab_estadisticas_productos (
-            product_id, nom_producto, precio_actual, stock_actual, producto_activo,
+            id_producto, nom_producto, precio_actual, stock_actual, producto_activo,
             total_ordenes, total_unidades_vendidas, total_ingresos,
             ventas_mes_actual, ingresos_mes_actual, ventas_mes_anterior, ingresos_mes_anterior,
             promedio_venta_mensual, promedio_ingreso_mensual, precio_promedio_venta,
@@ -66,7 +66,7 @@ BEGIN
             dias_desde_ultima_venta, rotacion_inventario, nivel_rotacion,
             ultima_actualizacion, periodo_calculo
         ) VALUES (
-            v_rec.product_id, v_rec.nom_producto, v_precio_min, v_stock_actual, v_rec.producto_activo,
+            v_rec.id_producto, v_rec.nom_producto, v_precio_min, v_stock_actual, v_rec.producto_activo,
             v_rec.total_ordenes, v_rec.total_unidades_vendidas, v_rec.total_ingresos,
             v_rec.ventas_mes_actual, v_rec.ingresos_mes_actual, v_rec.ventas_mes_anterior, v_rec.ingresos_mes_anterior,
             v_rec.promedio_venta_mensual, v_rec.promedio_ingreso_mensual, v_rec.precio_promedio_venta,
@@ -75,7 +75,7 @@ BEGIN
             0, CASE WHEN v_rec.total_unidades_vendidas = 0 THEN 'SIN_VENTAS' ELSE 'MEDIA' END,
             NOW(), v_mes_actual
         )
-        ON CONFLICT (product_id) DO UPDATE SET
+        ON CONFLICT (id_producto) DO UPDATE SET
             nom_producto = EXCLUDED.nom_producto,
             precio_actual = EXCLUDED.precio_actual,
             stock_actual = EXCLUDED.stock_actual,

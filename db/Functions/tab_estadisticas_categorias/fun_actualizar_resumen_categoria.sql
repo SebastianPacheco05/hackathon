@@ -66,19 +66,19 @@ BEGIN
     
     -- DECIDIR: Qué categorías actualizar (tabla categories)
     FOR v_categoria_record IN 
-        SELECT DISTINCT c.id AS id_categoria
-        FROM tab_categories c
-        WHERE c.is_active = TRUE
+        SELECT DISTINCT c.id_categoria AS id_categoria
+        FROM tab_categorias c
+        WHERE c.ind_activo = TRUE
           AND (p_recalcular_todo = TRUE OR 
                p_id_categoria IS NULL OR 
-               c.id = p_id_categoria)
+               c.id_categoria = p_id_categoria)
     LOOP
         -- CALCULAR: Estadísticas completas para la categoría
         SELECT 
-            c.name AS nom_categoria,
-            c.is_active AS categoria_activa,
-            COUNT(p.id) AS total_productos,
-            COUNT(CASE WHEN p.is_active THEN 1 END) AS productos_activos,
+            c.nom_categoria AS nom_categoria,
+            c.ind_activo AS categoria_activa,
+            COUNT(p.id_producto) AS total_productos,
+            COUNT(CASE WHEN p.ind_activo THEN 1 END) AS productos_activos,
             COUNT(CASE WHEN ep.total_unidades_vendidas > 0 THEN 1 END) AS productos_con_ventas,
             COALESCE(SUM(ep.total_ordenes), 0) AS total_ordenes,
             COALESCE(SUM(ep.total_unidades_vendidas), 0) AS total_unidades_vendidas,
@@ -89,13 +89,13 @@ BEGIN
             COALESCE(SUM(ep.ingresos_mes_anterior), 0) AS ingresos_mes_anterior,
             MIN(ep.fecha_primera_venta) AS fecha_primera_venta,
             MAX(ep.fecha_ultima_venta) AS fecha_ultima_venta,
-            CASE WHEN COUNT(p.id) > 0 THEN ROUND(AVG(ep.precio_actual), 2) ELSE 0 END AS precio_promedio_categoria
+            CASE WHEN COUNT(p.id_producto) > 0 THEN ROUND(AVG(ep.precio_actual), 2) ELSE 0 END AS precio_promedio_categoria
         INTO v_stats_record
-        FROM tab_categories c
-        LEFT JOIN tab_products p ON p.category_id = c.id
-        LEFT JOIN tab_estadisticas_productos ep ON ep.product_id = p.id
-        WHERE c.id = v_categoria_record.id_categoria
-        GROUP BY c.id, c.name, c.is_active;
+        FROM tab_categorias c
+        LEFT JOIN tab_productos p ON p.id_categoria = c.id
+        LEFT JOIN tab_estadisticas_productos ep ON ep.id_producto = p.id_producto
+        WHERE c.id_categoria = v_categoria_record.id_categoria
+        GROUP BY c.id_categoria, c.nom_categoria, c.ind_activo;
         
         -- CALCULAR: Análisis adicionales y productos top
         DECLARE
@@ -120,11 +120,11 @@ BEGIN
                 v_crecimiento_mensual := 100; -- Nuevo crecimiento desde 0
             END IF;
             
-            -- Producto más vendido por unidades (products con category_id)
+            -- Producto más vendido por unidades (products con id_categoria)
             SELECT ep.nom_producto, ep.total_unidades_vendidas
             INTO v_producto_mas_vendido, v_unidades_top_producto
             FROM tab_estadisticas_productos ep
-            JOIN tab_products p ON p.id = ep.product_id AND p.category_id = v_categoria_record.id_categoria
+            JOIN tab_productos p ON p.id_producto = ep.id_producto AND p.id_categoria = v_categoria_record.id_categoria
             WHERE ep.total_unidades_vendidas > 0
             ORDER BY ep.total_unidades_vendidas DESC
             LIMIT 1;
@@ -132,24 +132,24 @@ BEGIN
             -- Producto que genera más ingresos
             SELECT ep.nom_producto INTO v_producto_mayor_ingreso
             FROM tab_estadisticas_productos ep
-            JOIN tab_products p ON p.id = ep.product_id AND p.category_id = v_categoria_record.id_categoria
+            JOIN tab_productos p ON p.id_producto = ep.id_producto AND p.id_categoria = v_categoria_record.id_categoria
             WHERE ep.total_ingresos > 0
             ORDER BY ep.total_ingresos DESC LIMIT 1;
             
-            -- Mejor mes de ventas de la categoría (vía variant -> product -> category_id)
+            -- Mejor mes de ventas de la categoría (vía variant -> product -> id_categoria)
             SELECT TO_CHAR(o.fec_pedido, 'YYYY-MM') INTO v_mejor_mes_ventas
             FROM tab_orden_productos op
-            JOIN tab_product_variant_combinations pv ON pv.id = op.variant_id
-            JOIN tab_product_variant_groups g ON g.id = pv.group_id
-            JOIN tab_products p ON p.id = g.product_id AND p.category_id = v_categoria_record.id_categoria
+            JOIN tab_combinaciones_variante_producto pv ON pv.id_combinacion_variante = op.id_combinacion_variante
+            JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = pv.id_grupo_variante
+            JOIN tab_productos p ON p.id_producto = g.id_producto AND p.id_categoria = v_categoria_record.id_categoria
             JOIN tab_ordenes o ON op.id_orden = o.id_orden
             WHERE o.ind_estado IN (2, 3)
             GROUP BY TO_CHAR(o.fec_pedido, 'YYYY-MM')
             ORDER BY SUM(op.cant_producto * op.precio_unitario_orden) DESC LIMIT 1;
             
-            -- INSERTAR/ACTUALIZAR: tab_estadisticas_categorias (category_id)
+            -- INSERTAR/ACTUALIZAR: tab_estadisticas_categorias (id_categoria)
             INSERT INTO tab_estadisticas_categorias (
-                category_id,
+                id_categoria,
                 nom_categoria,
                 categoria_activa,
                 total_productos,
@@ -199,7 +199,7 @@ BEGIN
                 NOW(),
                 v_mes_actual
             )
-            ON CONFLICT (category_id)
+            ON CONFLICT (id_categoria)
             DO UPDATE SET
                 nom_categoria = EXCLUDED.nom_categoria,
                 categoria_activa = EXCLUDED.categoria_activa,

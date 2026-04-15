@@ -8,7 +8,7 @@
  *   - wid_usuario: ID del usuario a actualizar (obligatorio, > 0)
  *   - wnom_usuario: Nuevo nombre del usuario (obligatorio, mínimo 3 caracteres)
  *   - wape_usuario: Nuevo apellido del usuario (obligatorio, mínimo 3 caracteres)
- *   - wemail_usuario: Nuevo email del usuario (obligatorio, mínimo 3 caracteres)
+ *   - wemail_usuario: Nuevo email_usuario del usuario (obligatorio, mínimo 3 caracteres)
  *   - wpassword_usuario: Nueva contraseña (obligatorio, no vacío)
  *   - wdes_direccion: Nueva dirección (obligatorio, mínimo 3 caracteres)
  *   - wind_genero: Nuevo indicador de género (obligatorio)
@@ -59,7 +59,7 @@ $$
 
         -- VALIDACIÓN 4: Email del usuario
         IF wemail_usuario IS NULL OR wemail_usuario = '' OR LENGTH(TRIM(wemail_usuario)) < 3 THEN
-            RETURN 'Error: El email del usuario es obligatorio y debe tener al menos 3 caracteres.';
+            RETURN 'Error: El email_usuario del usuario es obligatorio y debe tener al menos 3 caracteres.';
         END IF;
 
         -- VALIDACIÓN 5: Contraseña del usuario
@@ -88,7 +88,7 @@ $$
         UPDATE tab_usuarios SET 
             nom_usuario = wnom_usuario,                                     -- Nuevo nombre
             ape_usuario = wape_usuario,                                     -- Nuevo apellido
-            email_usuario = wemail_usuario,                                 -- Nuevo email
+            email_usuario = wemail_usuario,                                 -- Nuevo email_usuario
             password_usuario = wpassword_usuario,                           -- Nueva contraseña
             ind_genero = wind_genero,                                       -- Nuevo género
             cel_usuario = wcel_usuario,                                     -- Nuevo celular

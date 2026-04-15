@@ -1,8 +1,8 @@
 /*
- * Desactiva lógicamente un comentario. Identificado por id_comentario, product_id y usuario.
+ * Desactiva lógicamente un comentario. Identificado por id_comentario, id_producto y usuario.
  */
 CREATE OR REPLACE FUNCTION fun_deactivate_comentarios(
-    wid_producto tab_comentarios.product_id%TYPE,
+    wid_producto tab_comentarios.id_producto%TYPE,
     wid_usuario tab_comentarios.id_usuario%TYPE,
     wid_comentario tab_comentarios.id_comentario%TYPE,
     wusr_operacion tab_comentarios.usr_update%TYPE
@@ -12,7 +12,7 @@ BEGIN
         RETURN 'Error: El usuario de operación es obligatorio';
     END IF;
     IF wid_producto IS NULL OR wid_producto <= 0 THEN
-        RETURN 'Error: El product_id es obligatorio';
+        RETURN 'Error: El id_producto es obligatorio';
     END IF;
     IF wid_usuario IS NULL OR wid_usuario <= 0 THEN
         RETURN 'Error: El ID de usuario es obligatorio';
@@ -25,7 +25,7 @@ BEGIN
         ind_activo = FALSE,
         usr_update = wusr_operacion,
         fec_update = NOW()
-    WHERE product_id = wid_producto
+    WHERE id_producto = wid_producto
       AND id_usuario = wid_usuario
       AND id_comentario = wid_comentario
       AND ind_activo = TRUE;

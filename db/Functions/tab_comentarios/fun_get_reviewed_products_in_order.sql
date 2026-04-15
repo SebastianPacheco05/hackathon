@@ -1,6 +1,6 @@
 /*
- * Lista los product_id que el usuario ya reseñó en una orden.
- * Retorna product_key como product_id::VARCHAR para compatibilidad.
+ * Lista los id_producto que el usuario ya reseñó en una orden.
+ * Retorna product_key como id_producto::VARCHAR para compatibilidad.
  */
 CREATE OR REPLACE FUNCTION fun_get_reviewed_products_in_order(
     wid_orden tab_comentarios.id_orden%TYPE,
@@ -14,7 +14,7 @@ BEGIN
         RAISE EXCEPTION 'El ID de usuario es obligatorio y debe ser mayor a 0';
     END IF;
     RETURN QUERY
-    SELECT DISTINCT c.product_id::VARCHAR AS product_key
+    SELECT DISTINCT c.id_producto::VARCHAR AS product_key
     FROM tab_comentarios c
     WHERE c.id_orden = wid_orden AND c.id_usuario = wid_usuario AND c.ind_activo = TRUE
     ORDER BY product_key;

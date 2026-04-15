@@ -36,13 +36,15 @@ def get_favorites(db:Session, id_usuario: Decimal):
         query = text("""
         SELECT
             f.id_usuario,
-            f.product_id AS id_producto,
-            p.name AS nom_producto,
+            f.id_producto,
+            p.nom_producto,
             """ + SQL_IMG_PRINCIPAL_COALESCE_P + """ AS img_producto,
-            (SELECT MIN(c.price) FROM tab_product_variant_combinations c JOIN tab_product_variant_groups g ON g.id = c.group_id WHERE g.product_id = p.id AND c.is_active = TRUE) AS val_precio,
+            (SELECT MIN(c.precio) FROM tab_combinaciones_variante_producto c
+             JOIN tab_grupos_variante_producto g ON g.id_grupo_variante = c.id_grupo_variante
+             WHERE g.id_producto = p.id_producto AND c.ind_activo = TRUE) AS val_precio,
             f.fec_insert
         FROM tab_favoritos f
-        INNER JOIN tab_products p ON p.id = f.product_id
+        INNER JOIN tab_productos p ON p.id_producto = f.id_producto
         WHERE f.id_usuario = :id_usuario
         ORDER BY f.fec_insert DESC
         """) 
