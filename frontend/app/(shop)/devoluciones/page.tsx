@@ -23,7 +23,7 @@ const MOCK = {
 export const generateMetadata = (): Metadata => {
   const title = "Política de devoluciones"
   const description =
-    "Consulta los plazos, condiciones y pasos para solicitar devoluciones y reembolsos en Compralo."
+    "Consulta los plazos, condiciones y pasos para solicitar devoluciones y reembolsos en AGROSALE."
 
   return {
     title,

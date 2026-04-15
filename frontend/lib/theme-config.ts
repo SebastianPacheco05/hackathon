@@ -11,19 +11,19 @@ export const THEME_CONFIG = {
     slow: 'transition-all duration-500',
   },
   
-  // Colores de marca (Compralo)
+  // Colores de marca (AGROSALE)
   brand: {
     primary: {
-      light: '#ec2538',
-      dark: '#ff4444',
+      light: '#00B207',
+      dark: '#00B207',
     },
     secondary: {
-      light: '#FF8C00',
-      dark: '#ff9933',
+      light: '#34A853',
+      dark: '#2F8F46',
     },
     accent: {
-      light: '#fec806',
-      dark: '#ffdd33',
+      light: '#7BC47F',
+      dark: '#6FB873',
     },
   },
   
@@ -114,9 +114,9 @@ export const THEME_CLASSES = {
   input: 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400',
   
   // Botones
-  buttonPrimary: 'bg-red-600 dark:bg-red-500 hover:bg-red-700 dark:hover:bg-red-600 text-white',
-  buttonSecondary: 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 text-white',
-  buttonOutline: 'border-2 border-red-600 dark:border-red-500 text-red-600 dark:text-red-500 hover:bg-red-600 dark:hover:bg-red-500 hover:text-white',
+  buttonPrimary: 'bg-[#00B207] dark:bg-[#00B207] hover:bg-[#009a06] dark:hover:bg-[#009a06] text-white',
+  buttonSecondary: 'bg-[#34A853] dark:bg-[#34A853] hover:bg-[#2F8F46] dark:hover:bg-[#2F8F46] text-white',
+  buttonOutline: 'border-2 border-[#00B207] dark:border-[#00B207] text-[#00B207] dark:text-[#00B207] hover:bg-[#00B207] dark:hover:bg-[#00B207] hover:text-white',
 } as const;
 
 /**

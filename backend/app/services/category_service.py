@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from schemas.category_schema import CategoryCreate, CategoryUpdate
+from core.config import settings
+from services import mock_data_service
 
 """
 En este archivo se crean las funciones utilizando "query by example" para interactuar con la base de datos en un CRUD básico:
@@ -29,6 +31,8 @@ def get_categories(db: Session):
     Se consume desde:
     - `category_router.get_categories`
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_categories()
     try:
         query = text("""
         SELECT
@@ -142,6 +146,8 @@ def get_categories_sublines(db: Session):
 # Una categoría específica (tab_categorias)
 def get_category(db: Session, category_id: Decimal):
     """Obtiene una categoría por ID con su conteo de productos activos."""
+    if settings.MOCK_MODE:
+        return mock_data_service.get_category_by_id(int(category_id))
     try:
         query = text("""
         SELECT
@@ -176,6 +182,8 @@ def create_category(db: Session, category: CategoryCreate, usr_insert: Decimal):
     - acepta `is_active` o `ind_activo` desde frontend,
     - parsea mensaje SQL para extraer `id` creado cuando aplica.
     """
+    if settings.MOCK_MODE:
+        return Decimal(str(mock_data_service.create_category(category.model_dump(exclude_none=True))))
     try:
         payload = category.model_dump(exclude_none=True)
         query = text("""
@@ -220,6 +228,8 @@ def update_category(db: Session, category_id: Decimal, category: CategoryUpdate,
     Nota:
     - si faltan campos opcionales, usa valores actuales para mantener contrato.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.update_category(int(category_id), category.model_dump(exclude_unset=True))
     try:
         payload = category.model_dump(exclude_unset=True)
         # Obtener valores actuales si no se envían (la función espera p_name obligatorio)
@@ -261,6 +271,8 @@ def deactivate_activate_category(db: Session, category_id: Decimal, usr_update: 
     Implementación:
     - delega en `fun_deactivate_activate_categoria`.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.toggle_category(int(category_id), bool(activar))
     try:
         query = text("""
         SELECT fun_deactivate_activate_categoria(:p_id_categoria, :p_activar, :p_usr_operacion)
@@ -293,6 +305,8 @@ def get_category_attributes(db: Session, category_id: Decimal):
     Se usa en:
     - configuración de formulario de producto por categoría.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_category_attributes(int(category_id))
     try:
         query = text("""
             SELECT
@@ -324,6 +338,9 @@ def get_category_attributes_with_values(db: Session, category_id: Decimal):
     Resultado:
     - lista de atributos, cada uno con `values` listo para UI.
     """
+    if settings.MOCK_MODE:
+        rows = mock_data_service.get_category_attributes(int(category_id))
+        return [{**dict(r), "values": []} for r in rows]
     try:
         attrs = get_category_attributes(db, category_id)
         attrs = [dict(a) for a in attrs]
@@ -363,6 +380,9 @@ def set_category_attributes(db: Session, category_id: Decimal, items: list, usr:
     Estrategia:
     - operación de reemplazo total para simplificar sincronización frontend-backend.
     """
+    if settings.MOCK_MODE:
+        mock_data_service.set_category_attributes(int(category_id), items)
+        return
     try:
         delete_q = text("DELETE FROM tab_atributos_categoria WHERE id_categoria = :category_id")
         db.execute(delete_q, {"category_id": category_id})

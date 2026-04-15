@@ -26,6 +26,11 @@
       "sourceType": "github",
       "computedHash": "6364378138ffe6aa1142621e44fc77eb5b2b05c51adcc90490999b11a454272a"
     },
+    "assistant-ui": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "computedHash": "82394e859e4adb795729710c36ff20c6142e7670c3fa10e40cfcdf2c5367396c"
+    },
     "auth": {
       "source": "vercel-labs/vercel-plugin",
       "sourceType": "github",
@@ -60,6 +65,11 @@
       "source": "vercel-labs/vercel-plugin",
       "sourceType": "github",
       "computedHash": "5c838f3e2ba6b2e943792c4d2322e2c27ecbd3b3cb0dcfbac41060ea90cfcac2"
+    },
+    "cloud": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "computedHash": "e55f969f8b3d833f5ce45d241824e15f668e196ab7c3748812850406e6d2085c"
     },
     "cms": {
       "source": "vercel-labs/vercel-plugin",
@@ -136,6 +146,11 @@
       "sourceType": "github",
       "computedHash": "a8f78cbfb1bdd9d721c6962d29fcce46308da07ed18e5311b1aa3b8da4deef45"
     },
+    "primitives": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "computedHash": "aa75be74eb86ee13e370fcd56180d0b95017f1699b569295db93d002fa4e7255"
+    },
     "react-best-practices": {
       "source": "vercel-labs/vercel-plugin",
       "sourceType": "github",
@@ -151,6 +166,11 @@
       "sourceType": "github",
       "computedHash": "b786757e9522e4c98ad41874d98261528a694bfb697fd72130ed592445e7aa14"
     },
+    "runtime": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "computedHash": "268fc13bc3aec37d11a864d3ad2e3f1b0fb0c416bc1d946f6977abcf3ab68277"
+    },
     "runtime-cache": {
       "source": "vercel-labs/vercel-plugin",
       "sourceType": "github",
@@ -160,6 +180,11 @@
       "source": "vercel-labs/vercel-plugin",
       "sourceType": "github",
       "computedHash": "7e2d237036b645a028a5227f8ba2ef1b01eb056093ba22e9f3517a2b722c6635"
+    },
+    "setup": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "computedHash": "46d64359823dd2f311a99ad716ebd54d52ad0d5f9ce12f230f6ec9efb047e484"
     },
     "shadcn": {
       "source": "vercel-labs/vercel-plugin",
@@ -171,15 +196,35 @@
       "sourceType": "github",
       "computedHash": "821125609b8c5dfb45c7715c74293d90630cabaf2a1d340b2d379f21e9928c4a"
     },
+    "streaming": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "computedHash": "88fa9db6e0429bcf6f07c22bb879114b2db07d98c93cf82ee1928634ba74c0c4"
+    },
     "swr": {
       "source": "vercel-labs/vercel-plugin",
       "sourceType": "github",
       "computedHash": "cf9dbfee2cf85488ea653a581518809c30a1c3ca8f83c57ea6632704457e1438"
     },
+    "thread-list": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "computedHash": "3e46e0994e2eda717d5ec626d065c7b152471d043d6969d224ffdd99aba3e374"
+    },
+    "tools": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "computedHash": "a5189f4ec1bf53b9565cffcc1d899c8d4e06859cb1df7a980530429fafb24a24"
+    },
     "turbopack": {
       "source": "vercel-labs/vercel-plugin",
       "sourceType": "github",
       "computedHash": "f5369c5efd09055273f89c9ab390dd83f752474ae6a282b0de8dd02e310f51a7"
+    },
+    "update": {
+      "source": "assistant-ui/skills",
+      "sourceType": "github",
+      "computedHash": "909af92da3892c434ade1a2bfdd3ebb8689f2681bcd3bf90c46e182e458d5b8a"
     },
     "v0-dev": {
       "source": "vercel-labs/vercel-plugin",

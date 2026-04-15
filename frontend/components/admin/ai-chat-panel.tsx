@@ -12,7 +12,8 @@ import {
 import { Button } from '@/components/ui'
 import { Textarea } from '@/components/ui'
 import { IconSend, IconSparkles, IconUser } from '@tabler/icons-react'
-import { Streamdown } from 'streamdown'
+import Link from 'next/link'
+import { MessageResponse } from '@/components/ai-elements/message'
 import { aiService } from '@/services/ai.service'
 import { PRODUCT_KEYS } from '@/hooks/use-products'
 import { cn } from '@/lib/utils'
@@ -242,6 +243,11 @@ export function AiChatPanel({ open, onOpenChange, aiEnabled }: AiChatPanelProps)
                 Pregunta sobre órdenes, productos, ventas o stock de tu tienda.
               </DialogDescription>
             </div>
+            <Button variant="outline" size="sm" className="shrink-0 text-xs" asChild>
+              <Link href="/admin/ai" onClick={() => onOpenChange(false)}>
+                Centro de decisiones
+              </Link>
+            </Button>
           </div>
         </DialogHeader>
 
@@ -276,9 +282,9 @@ export function AiChatPanel({ open, onOpenChange, aiEnabled }: AiChatPanelProps)
                       <p className="whitespace-pre-wrap">{msg.content}</p>
                     ) : (
                       <div className="prose prose-sm dark:prose-invert max-w-none">
-                        <Streamdown isAnimating={streamingMessageId === msg.id}>
+                        <MessageResponse isAnimating={streamingMessageId === msg.id}>
                           {msg.content}
-                        </Streamdown>
+                        </MessageResponse>
                       </div>
                     )}
                   </div>

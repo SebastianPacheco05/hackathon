@@ -22,14 +22,14 @@ const MOCK_FAQS = [
   {
     id: "4",
     pregunta: "¿Cómo contacto a soporte?",
-    respuesta: "Puedes escribirnos a contacto@compralo.com o usar el formulario en la página de Contacto. Atención al cliente de lunes a viernes.",
+    respuesta: "Puedes escribirnos a contacto@AGROSALE.com o usar el formulario en la página de Contacto. Atención al cliente de lunes a viernes.",
   },
 ]
 
 export const generateMetadata = (): Metadata => {
   const title = "Centro de ayuda"
   const description =
-    "Resuelve dudas frecuentes sobre pedidos, envíos, devoluciones y soporte en el Centro de Ayuda de Compralo."
+    "Resuelve dudas frecuentes sobre pedidos, envíos, devoluciones y soporte en el Centro de Ayuda de AGROSALE."
 
   return {
     title,
@@ -75,8 +75,8 @@ export default function HelpCenterPage() {
         <Mail className="h-5 w-5 text-[#ec2538] dark:text-red-400 shrink-0" />
         <p className="text-sm text-gray-600 dark:text-gray-400">
           ¿No encuentras lo que buscas? Escríbenos a{" "}
-          <a href="mailto:contacto@compralo.com" className="text-[#ec2538] dark:text-red-400 hover:underline">
-            contacto@compralo.com
+          <a href="mailto:contacto@AGROSALE.com" className="text-[#ec2538] dark:text-red-400 hover:underline">
+            contacto@AGROSALE.com
           </a>
         </p>
       </div>

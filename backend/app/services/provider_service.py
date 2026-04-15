@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from schemas.provider_schema import ProviderCreate, ProviderUpdate
+from core.config import settings
+from services import mock_data_service
 
 """
 Servicios de proveedores.
@@ -20,6 +22,8 @@ def get_providers(db:Session):
     Se consume desde:
     - `provider_router.get_providers`
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_providers()
     try:
         query = text("""
         SELECT 
@@ -43,6 +47,8 @@ def get_providers(db:Session):
 #trae un solo proveedor    
 def get_provider(db: Session, id_proveedor: Decimal):  
     """Obtiene un proveedor por ID."""
+    if settings.MOCK_MODE:
+        return mock_data_service.get_provider_by_id(int(id_proveedor))
     try:
         query = text("""
         SELECT
@@ -79,6 +85,8 @@ def create_provider(db:Session, provider:ProviderCreate, usr_insert: Decimal):
     Implementación:
     - delega en `fun_insert_proveedores`.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.create_provider(provider.model_dump())
     try:
         params = provider.model_dump()
         params["usr_insert"] = usr_insert
@@ -114,6 +122,8 @@ def update_provider(db:Session, id_proveedor:Decimal, provider:ProviderUpdate, u
     Implementación:
     - delega en `fun_update_proveedores`.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.update_provider(int(id_proveedor), provider.model_dump(exclude_unset=True))
     try:
         params = provider.model_dump(exclude_unset=True)
         params['id_proveedor'] = id_proveedor
@@ -153,6 +163,8 @@ def deactivate_activate_provider(db:Session, id_proveedor:Decimal, usr_update: D
     Implementación:
     - delega en `fun_deactivate_activate_proveedores`.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.toggle_provider(int(id_proveedor), bool(activar))
     try:
         query = text("""    
         SELECT fun_deactivate_activate_proveedores(:id_proveedor, :usr_update, :activar)

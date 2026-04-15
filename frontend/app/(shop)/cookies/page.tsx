@@ -29,7 +29,7 @@ const MOCK = {
 export const generateMetadata = (): Metadata => {
   const title = "Política de cookies"
   const description =
-    "Infórmate sobre el uso de cookies en Compralo, los tipos que utilizamos y cómo gestionar tus preferencias."
+    "Infórmate sobre el uso de cookies en AGROSALE, los tipos que utilizamos y cómo gestionar tus preferencias."
 
   return {
     title,

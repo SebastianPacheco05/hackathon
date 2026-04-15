@@ -10,8 +10,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Colores principales de Compralo - Valores hexadecimales exactos
-        'compralo': {
+        // Colores principales de AGROSALE - Valores hexadecimales exactos
+        'AGROSALE': {
           50: '#FFF5F5',
           100: '#FFE5E5',
           200: '#FFCCCC',
@@ -23,7 +23,7 @@ const config: Config = {
           800: '#660000',
           900: '#330000',
         },
-        'compralo-orange': {
+        'AGROSALE-orange': {
           50: '#FFF7F0',
           100: '#FFE8CC',
           200: '#FFD199',
@@ -35,7 +35,7 @@ const config: Config = {
           800: '#663100',
           900: '#331800',
         },
-        'compralo-yellow': {
+        'AGROSALE-yellow': {
           50: '#FFFEF0',
           100: '#FFFECC',
           200: '#FFFD99',

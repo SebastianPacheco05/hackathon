@@ -5,7 +5,7 @@ import { buildOpenGraph, buildTwitter } from "@/lib/seo"
 const MOCK_PRESS = [
   {
     id: "1",
-    titulo: "Compralo amplía su catálogo con nuevas categorías",
+    titulo: "AGROSALE amplía su catálogo con nuevas categorías",
     fecha: "2025-02-05",
     resumen: "La plataforma anuncia la incorporación de líneas y sublíneas en tecnología y hogar para el primer trimestre.",
   },
@@ -17,7 +17,7 @@ const MOCK_PRESS = [
   },
   {
     id: "3",
-    titulo: "Compralo supera el millón de pedidos entregados",
+    titulo: "AGROSALE supera el millón de pedidos entregados",
     fecha: "2025-01-10",
     resumen: "Hito de operaciones alcanzado gracias al crecimiento en usuarios y confianza en la plataforma.",
   },
@@ -26,7 +26,7 @@ const MOCK_PRESS = [
 export const generateMetadata = (): Metadata => {
   const title = "Sala de prensa"
   const description =
-    "Consulta los comunicados y notas de prensa más recientes sobre Compralo."
+    "Consulta los comunicados y notas de prensa más recientes sobre AGROSALE."
 
   return {
     title,
@@ -75,7 +75,7 @@ export default function PressPage() {
       </ul>
 
       <p className="mt-6 text-sm text-gray-500 dark:text-gray-500">
-        Para solicitudes de prensa: contacto@compralo.com (asunto: Prensa).
+        Para solicitudes de prensa: contacto@AGROSALE.com (asunto: Prensa).
       </p>
 
       <Link

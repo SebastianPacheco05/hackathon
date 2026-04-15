@@ -22,6 +22,8 @@ from sqlalchemy import text
 from typing import Dict, List, Any
 
 from services.product_service import SQL_IMG_PRINCIPAL_COALESCE_P
+from core.config import settings
+from services import mock_data_service
 
 
 def _format_revenue_full(value: float) -> str:
@@ -57,6 +59,8 @@ def get_dashboard_data(db: Session, time_range: str = 'monthly') -> Dict[str, An
     4) Trae top productos y últimas órdenes.
     5) Calcula resumen final y retorna payload homogéneo.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_dashboard_data(time_range)
     try:
         # Calcular fechas según el rango de tiempo
         end_date = datetime.now()

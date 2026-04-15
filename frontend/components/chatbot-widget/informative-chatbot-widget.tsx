@@ -170,7 +170,7 @@ export function InformativeChatbotWidget() {
                    h-14 w-14 sm:h-16 sm:w-16"
         aria-label="Abrir asistente"
       >
-        <img src="/carrito.svg" alt="Asistente" className="h-8 w-8 shrink-0 object-contain sm:h-8 sm:w-8" width={32} height={32} />
+        <img src="/main_logo.svg" alt="Asistente" className="h-8 w-8 shrink-0 object-contain sm:h-8 sm:w-8" width={32} height={32} />
       </button>
     )
   }
@@ -189,7 +189,7 @@ export function InformativeChatbotWidget() {
         <div className="bg-primary text-primary-foreground px-5 py-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 bg-primary-foreground/20 rounded-full flex items-center justify-center ring-2 ring-primary-foreground/30 overflow-hidden">
-              <Image src="/carrito.svg" alt="" width={24} height={24} />
+              <Image src="/main_logo.svg" alt="" width={24} height={24} />
             </div>
             <div>
               <h3 className="font-semibold text-base">Información legal y comercial</h3>
@@ -221,16 +221,15 @@ export function InformativeChatbotWidget() {
                     </Avatar>
                   ) : (
                     <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted ring-2 ring-border">
-                      <img src="/carrito.svg" alt="" className="h-5 w-5 object-contain" width={20} height={20} />
+                      <img src="/main_logo.svg" alt="" className="h-5 w-5 object-contain" width={20} height={20} />
                     </div>
                   )}
                   <div className={`flex-1 min-w-0 ${message.role === "user" ? "text-right" : "text-left"}`}>
                     <div
-                      className={`inline-block rounded-2xl px-4 py-2.5 max-w-[85%] shadow-sm ${
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-card text-card-foreground border border-border"
-                      }`}
+                      className={`inline-block rounded-2xl px-4 py-2.5 max-w-[85%] shadow-sm ${message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card text-card-foreground border border-border"
+                        }`}
                     >
                       <p className="text-sm leading-relaxed whitespace-pre-line">{message.content}</p>
                     </div>

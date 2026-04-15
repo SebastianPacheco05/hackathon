@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from schemas.brand_schema import BrandCreate, BrandUpdate
+from core.config import settings
+from services import mock_data_service
 
 """
 Servicios de marcas.
@@ -21,6 +23,8 @@ def get_brands(db:Session):
     Se consume desde:
     - `brand_router.get_brands`
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.get_brands()
     try:
         query = text("""
         SELECT 
@@ -55,6 +59,8 @@ def create_brand(db:Session, brand:BrandCreate, usr_insert: str):
     Implementación:
     - delega en `fun_insert_marca`.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.create_brand(brand.model_dump())
     try:
         # Convierte el objeto Pydantic BrandCreate en un diccionario Python
         params = brand.model_dump()
@@ -94,6 +100,8 @@ def update_brand(db:Session, id_marca:Decimal, brand:BrandUpdate, usr_update: st
     Implementación:
     - delega en `fun_update_marca`.
     """
+    if settings.MOCK_MODE:
+        return mock_data_service.update_brand(int(id_marca), brand.model_dump(exclude_unset=True))
     try:
         update_params = brand.model_dump(exclude_unset=True)
         update_params['id_marca'] = id_marca
@@ -131,6 +139,10 @@ def deactivate_activate_brand(db:Session, id_marca:Decimal, usr_update: Decimal,
     Implementación:
     - delega en `fun_deactivate_activate_marca`.
     """
+    if settings.MOCK_MODE:
+        msg = mock_data_service.toggle_brand(int(id_marca), bool(activar))
+        action = "activada" if activar else "desactivada"
+        return {"message": f"Marca {action} correctamente ({msg})"}
     try:
         params = {'id_marca': id_marca, 'usr_update': usr_update, 'activar': activar}
         query = text("""

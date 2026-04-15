@@ -49,7 +49,7 @@
 
 :root {
   --radius: 0.625rem;
-  /* Colores principales de Compralo - Valores hexadecimales exactos */
+  /* Colores principales de AGROSALE - Valores hexadecimales exactos */
   --background: #F5F5F5;
   --foreground: #000000;
   --card: #FFFFFF;
@@ -57,42 +57,42 @@
   --popover: #FFFFFF;
   --popover-foreground: #000000;
   
-  /* Rojo como color primario */
-  --primary: #FF0000;
+  /* Verde como color primario */
+  --primary: #00B207;
   --primary-foreground: #FFFFFF;
   
-  /* Naranja como color secundario */
-  --secondary: #FF7A00;
+  /* Verde secundario suave */
+  --secondary: #34A853;
   --secondary-foreground: #FFFFFF;
   
-  /* Amarillo para acentos */
-  --accent: #FFD600;
-  --accent-foreground: #000000;
+  /* Acento verde claro */
+  --accent: #7BC47F;
+  --accent-foreground: #0B3D1E;
   
-  /* Rojo para elementos destructivos */
-  --destructive: #FF0000;
+  /* Verde base de marca */
+  --destructive: #00B207;
   
   /* Bordes y elementos de interfaz */
   --border: #E5E5E5;
   --input: #E5E5E5;
-  --ring: #FF0000;
+  --ring: #00B207;
   
   /* Colores para gráficos */
-  --chart-1: #FF0000;
-  --chart-2: #FF7A00;
-  --chart-3: #FFD600;
+  --chart-1: #00B207;
+  --chart-2: #34A853;
+  --chart-3: #7BC47F;
   --chart-4: #F5F5F5;
   --chart-5: #000000;
   
   /* Colores para la barra lateral */
   --sidebar: #FFFFFF;
   --sidebar-foreground: #000000;
-  --sidebar-primary: #FF0000;
+  --sidebar-primary: #00B207;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #F5F5F5;
-  --sidebar-accent-foreground: #FF7A00;
+  --sidebar-accent-foreground: #2F6B3A;
   --sidebar-border: #E5E5E5;
-  --sidebar-ring: #FF0000;
+  --sidebar-ring: #00B207;
   
   /* Colores muteados */
   --muted: #F5F5F5;
@@ -100,7 +100,7 @@
 }
 
 .dark {
-  /* Colores oscuros de Compralo (azules profundos) */
+  /* Colores oscuros de AGROSALE (azules profundos) */
   --background: #0b1220; /* fondo principal azul oscuro */
   --foreground: #FFFFFF;
   --card: #10192e; /* un poco más claro que background */
@@ -109,34 +109,34 @@
   --popover-foreground: #FFFFFF;
 
   /* Colores de marca en modo oscuro */
-  --primary: #FF0000;
+  --primary: #00B207;
   --primary-foreground: #FFFFFF;
-  --secondary: #FF7A00;
+  --secondary: #34A853;
   --secondary-foreground: #FFFFFF;
-  --accent: #FFD600;
-  --accent-foreground: #000000;
+  --accent: #7BC47F;
+  --accent-foreground: #0B3D1E;
 
   /* Bordes y elementos de interfaz en modo oscuro (azul/gris profundo) */
   --border: #1f2940;
   --input: #1f2940;
-  --ring: #FF0000;
+  --ring: #00B207;
 
   /* Colores para gráficos en modo oscuro */
-  --chart-1: #FF0000;
-  --chart-2: #FF7A00;
-  --chart-3: #FFD600;
+  --chart-1: #00B207;
+  --chart-2: #34A853;
+  --chart-3: #7BC47F;
   --chart-4: #0b1220;
   --chart-5: #FFFFFF;
 
   /* Sidebar en modo oscuro con azul consistente */
   --sidebar: #0f1629;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #FF0000;
+  --sidebar-primary: #00B207;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FF7A00;
+  --sidebar-accent: #2F6B3A;
   --sidebar-accent-foreground: #FFFFFF;
   --sidebar-border: #1f2940;
-  --sidebar-ring: #FF0000;
+  --sidebar-ring: #00B207;
 
   /* Colores muteados en modo oscuro */
   --muted: #0f1629;
