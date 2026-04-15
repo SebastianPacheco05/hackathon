@@ -21,7 +21,8 @@ import {
   IconBrandGoogle,
   IconCreditCard,
   IconDiscount,
-  IconCoins
+  IconCoins,
+  IconSparkles
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/layout/dashboard/nav-main"
@@ -111,6 +112,12 @@ const data = {
       title: "Analíticas",
       url: "/admin/analytics",
       icon: IconChartBar,
+      section: "otros"
+    },
+    {
+      title: "Centro de decisiones IA",
+      url: "/admin/ai",
+      icon: IconSparkles,
       section: "otros"
     }
   ],
