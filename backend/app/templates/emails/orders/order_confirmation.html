@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Pedido #{{ order.id }} confirmado – {{ app_name }}{% endblock %}
+
+{% block preheader %}Tu pedido #{{ order.id }} está confirmado. Total ${{ order.total }}. Te avisamos cuando sea enviado.{% endblock %}
+
+{% block content %}
+<div class="greeting">¡Orden confirmada!</div>
+
+<div class="alert alert-success">
+    <strong>Tu orden ha sido confirmada.</strong> Hemos recibido tu pedido y lo estamos preparando para el envío.
+</div>
+
+<div class="content-block">
+    <h2>Detalles de tu orden</h2>
+    <table class="table">
+        <tr><td><strong>N.º de orden</strong></td><td>#{{ order.id }}</td></tr>
+        <tr><td><strong>Fecha</strong></td><td>{{ order.created_at }}</td></tr>
+        <tr><td><strong>Estado</strong></td><td><span style="background:#16a34a; color:#fff; padding:4px 8px; border-radius:4px;">Confirmada</span></td></tr>
+        <tr><td><strong>Subtotal</strong></td><td>${{ order.subtotal or order.get('subtotal', '') }}</td></tr>
+        {% if (order.discount_total or order.get('discount_total')) and (order.discount_total or order.get('discount_total')) != '0' %}
+        <tr><td><strong>Descuentos</strong></td><td style="color:#16a34a; font-weight:700;">- ${{ order.discount_total or order.get('discount_total', '') }}</td></tr>
+        {% endif %}
+        <tr><td><strong>Total</strong></td><td class="price">${{ order.total }}</td></tr>
+    </table>
+</div>
+
+{% if order.points_earned is not none %}
+<div class="content-block">
+    <div class="alert alert-info" style="margin-top:0;">
+        <strong>Puntos ganados:</strong> +{{ order.points_earned }} pts
+    </div>
+</div>
+{% endif %}
+
+{% set discounts = order.discounts_applied or order.get('discounts_applied', []) %}
+{% if discounts and discounts|length > 0 %}
+<div class="content-block">
+    <h3>Descuentos aplicados</h3>
+    <table class="table">
+        <thead><tr><th>Descuento</th><th>Tipo</th><th>Ahorro</th></tr></thead>
+        <tbody>
+        {% for d in discounts %}
+        <tr>
+            <td>{{ d.nombre or d.codigo or 'Descuento' }}</td>
+            <td>
+                {% if d.tipo_descuento == 'codigo' %}Cupón{% elif d.tipo_descuento == 'automatico' %}Automático{% elif d.tipo_descuento == 'canje_puntos' %}Canje de puntos{% else %}{{ d.tipo_descuento or 'Descuento' }}{% endif %}
+            </td>
+            <td style="color:#16a34a; font-weight:700;">- ${{ d.descuento_aplicado_fmt or d.descuento_aplicado or d.monto or d.valor }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<div class="content-block">
+    <h3>Productos</h3>
+    <table class="table">
+        <thead><tr><th>Producto</th><th>Variante / Opciones</th><th>Cant.</th><th>P. unit.</th><th>Total</th></tr></thead>
+        <tbody>
+        {% for item in (order['items'] if order is mapping else (order.items or [])) %}
+        <tr>
+            <td>
+                {% if item.image_url or item.get('image_url') %}
+                <div style="display:flex; gap:12px; align-items:flex-start;">
+                    <img
+                        src="{{ item.image_url or item.get('image_url') }}"
+                        width="56"
+                        height="56"
+                        alt="{{ item.product_name or item.get('product_name', '') }}"
+                        style="display:block; width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid #e5e7eb;"
+                    />
+                    <div style="font-weight:600; color:#111827;">{{ item.product_name or item.get('product_name', '') }}</div>
+                </div>
+                {% else %}
+                {{ item.product_name or item.get('product_name', '') }}
+                {% endif %}
+            </td>
+            <td>{{ item.options or item.get('options', '') or '—' }}</td>
+            <td>{{ item.quantity or item.get('quantity', '') }}</td>
+            <td>${{ item.unit_price or item.get('unit_price', '') }}</td>
+            <td>${{ item.price or item.get('price', '') }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="content-block">
+    <h3>Envío</h3>
+    <table class="table">
+        <tr><td><strong>Dirección</strong></td><td>{{ order.shipping_address or order.get('shipping_address', '') }}</td></tr>
+        <tr><td><strong>Método</strong></td><td>{{ order.shipping_method or order.get('shipping_method', '') }}</td></tr>
+        <tr><td><strong>Entrega estimada</strong></td><td>{{ order.estimated_delivery or order.get('estimated_delivery', '') }}</td></tr>
+    </table>
+</div>
+
+<div class="alert alert-info">
+    Recibirás un email cuando tu orden sea enviada y podrás rastrearla.
+</div>
+
+{% set order_url = frontend_url ~ '/profile/orders/' ~ order.id %}
+{% set url = order_url %}
+{% set label = "Ver detalle del pedido" %}
+{% set variant = "primary" %}
+<div class="text-center">
+    {% include "_button.html" %}
+</div>
+
+<div class="content-block text-center">
+    <div style="font-size:14px; color:#6b7280; margin-top:14px;">
+        ¿Necesitas ayuda?
+        <a href="mailto:{{ support_email }}" style="color:#dc2626; text-decoration:none;">{{ support_email }}</a>
+        <span style="color:#d1d5db; padding:0 8px;">·</span>
+        <a href="{{ frontend_url }}/contacto" style="color:#dc2626; text-decoration:none;">Contacto</a>
+    </div>
+    <div class="text-muted" style="margin-top:10px;">Gracias por elegir {{ app_name }}.</div>
+</div>
+{% endblock %}

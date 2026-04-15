@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ app_name }}{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            color: #111827;
+            background: #f0f0f0;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .greeting { font-size: 22px; margin-bottom: 24px; color: #dc2626; font-weight: 700; text-align: center; }
+        .content-block { margin-bottom: 24px; }
+        .content-block h2 { color: #111827; margin-bottom: 16px; font-size: 22px; font-weight: 700; border-bottom: 3px solid #dc2626; padding-bottom: 8px; }
+        .content-block h3 { color: #374151; margin-bottom: 12px; font-size: 18px; font-weight: 600; }
+        .content-block p { margin-bottom: 12px; line-height: 1.5; color: #6b7280; font-size: 15px; }
+        .alert { padding: 16px 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid; font-size: 15px; }
+        .alert-info { background: #fef2f2; border-left-color: #dc2626; color: #991b1b; }
+        .alert-success { background: #f0fdf4; border-left-color: #16a34a; color: #166534; }
+        .alert-warning { background: #fffbeb; border-left-color: #d97706; color: #92400e; }
+        .alert-danger { background: #fef2f2; border-left-color: #dc2626; color: #991b1b; }
+        .table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+        .table th, .table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+        .table th { background: #dc2626; color: #ffffff; font-weight: 600; font-size: 14px; }
+        .table tr:nth-child(even) { background: #f9fafb; }
+        .highlight-box { background: #fef2f2; border: 2px solid #dc2626; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+        .divider { height: 2px; background: #e5e7eb; margin: 32px 0; }
+        .price { font-size: 22px; font-weight: 700; color: #dc2626; }
+        .discount-badge { background: #dc2626; color: #ffffff; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase; display: inline-block; margin: 8px 0; }
+        .text-center { text-align: center; }
+        .text-muted { color: #6b7280; font-size: 14px; }
+        .text-small { font-size: 12px; }
+        .product-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .product-table td { padding: 16px; border: 1px solid #e5e7eb; vertical-align: top; font-size: 15px; }
+        @media only screen and (max-width: 600px) {
+            .email-body-cell { padding: 24px 20px !important; }
+            .product-table td { display: block; width: 100% !important; }
+        }
+    </style>
+</head>
+<body style="margin:0; padding:20px 0; background:#f0f0f0;">
+    <!-- Preheader oculto para la mayoría de clientes (sin mso-hide para evitar warnings de lint) -->
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">
+        {% block preheader %}{% endblock %}
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f0f0;">
+        <tr>
+            <td align="center" style="padding:20px 0;">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%;">
+                    <!-- Header -->
+                    <tr>
+                        <td bgcolor="#ffffff" style="padding:20px 32px; text-align:center; border-bottom:4px solid #dc2626;">
+                            <div style="font-size:26px; font-weight:800; color:#dc2626; margin-bottom:6px;">{{ app_name }}</div>
+                            <div style="margin-top:4px;">
+                                <!-- Logo carrito.svg inline para que se vea en clientes de correo sin depender de rutas externas -->
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 680" width="40" height="40" aria-hidden="true" style="display:inline-block; vertical-align:middle;">
+                                    <circle fill="#ec2538" cx="280.42" cy="568.76" r="43.83"/>
+                                    <circle fill="#ec2538" cx="495.94" cy="568.76" r="43.83"/>
+                                    <path fill="#ec2538" d="M53.48,164.04h82.2c3.44,0,6.42,2.37,7.2,5.73l67.48,292.67c4.66,20.22,22.67,34.55,43.42,34.55h267.95c34.64,0,64.96-23.25,73.96-56.7l57.12-212.33c4.52-16.79-8.13-33.28-25.51-33.28h-61.44c4.92,71.77-21.63,132.81-63.82,188.53,19.19,12.32,33.63,26.23,32.64,45.31,1.55,34.12-48.73,38.39-108.03,37.47h-119.7c-17.42,0-31.54-14.12-31.54-31.54v-145.6c0-22.14,23.66-36.25,43.14-25.72l27.7,14.97c23.19-21.34,40.1-48.75,49.78-83.14h-190.56c-3.24,0-6.04-2.25-6.75-5.41l-8.66-38.78c-4.94-22.13-24.58-37.87-47.26-37.87H53.47c-5.82,0-11.59,1.55-16.4,4.82-7.04,4.79-10.7,11.74-10.71,21.02-.71,10.34,3.81,17.17,11.9,21.61,4.64,2.55,9.93,3.69,15.22,3.69Z"/>
+                                    <path fill="#fec806" d="M441.83,75.06c-4.32,118.31-38.28,185.28-84.47,231.11-3.22,3.2-8.23,3.71-12.07,1.3l-35.57-22.4c-4.62-2.91-10.64.41-10.64,5.87v140.38c0,5.26,4.25,9.53,9.51,9.56,78.36.44,153.52.47,192.25-4.16,9.85-1.18,13.22-13.75,5.29-19.7l-35.17-26.37c-3.1-2.33-3.57-6.8-1.02-9.72,103.04-118.15,93.62-227.41-15.41-311.86-5.07-3.93-12.48-.42-12.71,5.99Z"/>
+                                </svg>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Body -->
+                    <tr>
+                        <td bgcolor="#ffffff" class="email-body-cell" style="padding:32px 40px;">
+                            {% block content %}
+                            {% endblock %}
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td bgcolor="#1f2937" style="padding:28px 40px; text-align:center;">
+                            <div style="color:#ffffff; font-weight:600; margin-bottom:6px;">{{ company_name }}</div>
+                            <div style="margin-bottom:14px;">
+                                <!-- Mismo logo debajo del nombre de la marca -->
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 680" width="32" height="32" aria-hidden="true" style="display:inline-block; vertical-align:middle;">
+                                    <circle fill="#ec2538" cx="280.42" cy="568.76" r="43.83"/>
+                                    <circle fill="#ec2538" cx="495.94" cy="568.76" r="43.83"/>
+                                    <path fill="#ec2538" d="M53.48,164.04h82.2c3.44,0,6.42,2.37,7.2,5.73l67.48,292.67c4.66,20.22,22.67,34.55,43.42,34.55h267.95c34.64,0,64.96-23.25,73.96-56.7l57.12-212.33c4.52-16.79-8.13-33.28-25.51-33.28h-61.44c4.92,71.77-21.63,132.81-63.82,188.53,19.19,12.32,33.63,26.23,32.64,45.31,1.55,34.12-48.73,38.39-108.03,37.47h-119.7c-17.42,0-31.54-14.12-31.54-31.54v-145.6c0-22.14,23.66-36.25,43.14-25.72l27.7,14.97c23.19-21.34,40.1-48.75,49.78-83.14h-190.56c-3.24,0-6.04-2.25-6.75-5.41l-8.66-38.78c-4.94-22.13-24.58-37.87-47.26-37.87H53.47c-5.82,0-11.59,1.55-16.4,4.82-7.04,4.79-10.7,11.74-10.71,21.02-.71,10.34,3.81,17.17,11.9,21.61,4.64,2.55,9.93,3.69,15.22,3.69Z"/>
+                                    <path fill="#fec806" d="M441.83,75.06c-4.32,118.31-38.28,185.28-84.47,231.11-3.22,3.2-8.23,3.71-12.07,1.3l-35.57-22.4c-4.62-2.91-10.64.41-10.64,5.87v140.38c0,5.26,4.25,9.53,9.51,9.56,78.36.44,153.52.47,192.25-4.16,9.85-1.18,13.22-13.75,5.29-19.7l-35.17-26.37c-3.1-2.33-3.57-6.8-1.02-9.72,103.04-118.15,93.62-227.41-15.41-311.86-5.07-3.93-12.48-.42-12.71,5.99Z"/>
+                                </svg>
+                            </div>
+                            {% if company_tagline and company_tagline != company_name %}
+                            <div style="color:rgba(255,255,255,0.8); font-size:14px; margin-bottom:16px;">{{ company_tagline }}</div>
+                            {% endif %}
+
+                            <div style="font-size:13px; color:rgba(255,255,255,0.85); margin:10px 0 18px; line-height:1.6;">
+                                ¿Necesitas ayuda?
+                                <a href="mailto:{{ support_email }}" style="color:#f97316; text-decoration:none;">{{ support_email }}</a>
+                                <span style="color:rgba(255,255,255,0.35); padding:0 8px;">·</span>
+                                <a href="{{ frontend_url }}/contacto" style="color:#f97316; text-decoration:none;">Contacto</a>
+                            </div>
+
+                            <div style="margin:12px 0 16px;">
+                                <a href="{{ frontend_url }}" style="color:#f97316; text-decoration:none; margin:0 10px; font-size:14px;">Inicio</a>
+                                <a href="{{ frontend_url }}/productos" style="color:#f97316; text-decoration:none; margin:0 10px; font-size:14px;">Productos</a>
+                                <a href="{{ frontend_url }}/ofertas" style="color:#f97316; text-decoration:none; margin:0 10px; font-size:14px;">Ofertas</a>
+                                <a href="{{ frontend_url }}/contacto" style="color:#f97316; text-decoration:none; margin:0 10px; font-size:14px;">Contacto</a>
+                            </div>
+
+                            <div style="font-size:12px; color:rgba(255,255,255,0.7); line-height:1.7;">
+                                <div style="margin:8px 0;">© {{ current_year }} {{ company_name }}. Todos los derechos reservados.</div>
+                                <div style="margin:8px 0;">
+                                    <a href="{{ frontend_url }}/unsubscribe" style="color:#f97316; text-decoration:none;">Cancelar suscripción</a>
+                                    <span style="color:rgba(255,255,255,0.35); padding:0 8px;">|</span>
+                                    <a href="{{ frontend_url }}/privacidad" style="color:#f97316; text-decoration:none;">Política de Privacidad</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

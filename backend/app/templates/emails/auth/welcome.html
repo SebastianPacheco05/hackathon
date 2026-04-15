@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Bienvenido a {{ app_name }}{% endblock %}
+
+{% block preheader %}Bienvenido a {{ app_name }}. Verifica tu email para completar tu registro y empezar a comprar.{% endblock %}
+
+{% block content %}
+<div class="greeting">¡Hola {{ user_name }}!</div>
+
+<div class="highlight-box">
+    <h2 style="margin:0; font-size:22px; color:#dc2626;">Bienvenido a {{ app_name }}</h2>
+    <p style="margin:10px 0 0; font-size:15px; color:#6b7280;">Tu tienda online de confianza te da la bienvenida.</p>
+</div>
+
+<div class="content-block">
+    <p>Estamos encantados de tenerte. Has dado el primer paso para descubrir productos a los mejores precios y una experiencia de compra sencilla.</p>
+</div>
+
+{% if first_purchase_discount %}
+<div class="highlight-box" style="background-color:#fef3c7; border:2px solid #f59e0b; margin:20px 0;">
+    <h2 style="margin:0 0 10px; font-size:20px; color:#92400e;">🎉 ¡Descuento especial para tu primera compra!</h2>
+    <p style="margin:0 0 10px; font-size:16px; color:#78350f; font-weight:600;">
+        {{ first_purchase_discount.nom_descuento }}
+    </p>
+    {% if first_purchase_discount.des_descuento %}
+    <p style="margin:0 0 10px; font-size:14px; color:#92400e;">
+        {{ first_purchase_discount.des_descuento }}
+    </p>
+    {% endif %}
+    <p style="margin:10px 0 0; font-size:18px; color:#78350f; font-weight:bold;">
+        {% if first_purchase_discount.tipo_calculo %}
+            {{ first_purchase_discount.val_porce_descuento or 0 }}% de descuento
+        {% else %}
+            ${{ "{:,.0f}".format(first_purchase_discount.val_monto_descuento or 0) }} de descuento
+        {% endif %}
+    </p>
+    {% if first_purchase_discount.codigo_descuento %}
+    <p style="margin:15px 0 0; font-size:14px; color:#92400e;">
+        <strong>Código:</strong> <span style="background-color:#fff; padding:4px 8px; border-radius:4px; font-family:monospace; font-weight:bold;">{{ first_purchase_discount.codigo_descuento }}</span>
+    </p>
+    {% endif %}
+</div>
+{% endif %}
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; margin:20px 0;">
+<tr>
+<td style="padding:16px; border:1px solid #e5e7eb; width:33%; text-align:center; font-size:15px;">
+<strong>Envío rápido</strong><br><span style="font-size:14px; color:#6b7280;">Pedidos en tiempo récord</span>
+</td>
+<td style="padding:16px; border:1px solid #e5e7eb; width:33%; text-align:center; font-size:15px;">
+<strong>Calidad garantizada</strong><br><span style="font-size:14px; color:#6b7280;">Productos de calidad</span>
+</td>
+<td style="padding:16px; border:1px solid #e5e7eb; width:33%; text-align:center; font-size:15px;">
+<strong>Ofertas exclusivas</strong><br><span style="font-size:14px; color:#6b7280;">Descuentos para ti</span>
+</td>
+</tr>
+</table>
+
+{% if verify_url %}
+<div class="alert alert-info">
+    <strong>Un paso más:</strong> Verifica tu email para completar el registro.
+</div>
+<div class="text-center">
+    {% set url = verify_url %}
+    {% set label = "Verificar mi email ahora" %}
+    {% set variant = "success" %}
+    {% include "_button.html" %}
+</div>
+{% else %}
+<div class="text-center">
+    {% set explore_url = frontend_url ~ '/productos' %}
+    {% set url = explore_url %}
+    {% set label = "Explorar productos" %}
+    {% set variant = "primary" %}
+    {% include "_button.html" %}
+</div>
+{% endif %}
+
+<div class="divider"></div>
+
+<div class="content-block">
+    <p>¿Necesitas ayuda? <a href="mailto:{{ support_email }}" style="color:#dc2626;">{{ support_email }}</a> · <a href="{{ frontend_url }}/contacto" style="color:#dc2626;">Contacto</a></p>
+    <p class="text-muted">Gracias por elegir {{ app_name }}.</p>
+</div>
+{% endblock %}

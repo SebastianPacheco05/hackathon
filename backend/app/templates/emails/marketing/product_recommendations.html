@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Recomendaciones para ti – {{ app_name }}{% endblock %}
+
+{% block preheader %}Productos recomendados para ti en {{ app_name }}. Código RECOMENDADO15: 15% OFF. Válido hasta {{ offer_expiry }}.{% endblock %}
+
+{% block content %}
+<div class="greeting">¡Hola {{ customer_name }}!</div>
+
+<div class="highlight-box">
+    <h2 style="margin:0; font-size:22px; color:#dc2626;">Recomendaciones para ti</h2>
+    <p style="margin:10px 0 0; font-size:15px; color:#6b7280;">Basado en tus compras, creemos que te gustarán estos productos.</p>
+</div>
+
+<div class="content-block">
+    <h3>Productos recomendados</h3>
+    <table class="table">
+        <thead><tr><th>Producto</th><th>Categoría</th><th>Precio</th><th></th></tr></thead>
+        <tbody>
+        {% for product in (recommended_products or []) %}
+        <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.category }}</td>
+            <td class="price">${{ product.price }}{% if product.discount %} {{ product.discount }}% OFF{% endif %}</td>
+            <td><a href="{{ frontend_url }}/productos/{{ product.slug }}" style="color:#dc2626; font-size:14px;">Ver</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="alert alert-info">
+    Elegimos estos productos según tus compras y lo que has visto.
+</div>
+
+{% set rec_url = frontend_url ~ '/productos?recomendados=true' %}
+<div class="text-center">
+    {% set url = rec_url %}
+{% set label = "Ver todas las recomendaciones" %}
+{% set variant = "primary" %}
+{% include "_button.html" %}
+</div>
+
+{% if related_offers %}
+<div class="content-block">
+    <h3>Ofertas relacionadas</h3>
+    <table class="table">
+        {% for offer in related_offers %}
+        <tr><td>{{ offer.title }}</td><td>{{ offer.discount }}</td><td><a href="{{ frontend_url }}/ofertas/{{ offer.slug }}" style="color:#dc2626;">Ver oferta</a></td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+
+<div class="alert alert-success">
+    Código <strong>RECOMENDADO15</strong>: 15% de descuento en productos recomendados. Válido hasta {{ offer_expiry }}.
+</div>
+
+{% if stats %}
+<div class="content-block">
+    <p><strong>Tu actividad:</strong> {{ stats.total_orders }} órdenes · ${{ stats.total_spent }} · Favorita: {{ stats.favorite_category }}</p>
+</div>
+{% endif %}
+
+<div class="alert alert-warning">
+    <a href="{{ frontend_url }}/preferences" style="color:#d97706;">Actualizar preferencias</a> o <a href="{{ unsubscribe_url }}" style="color:#d97706;">dejar de recibir recomendaciones</a>.
+</div>
+
+<div class="text-center text-muted">
+    <p>Gracias por confiar en {{ app_name }}.</p>
+</div>
+{% endblock %}

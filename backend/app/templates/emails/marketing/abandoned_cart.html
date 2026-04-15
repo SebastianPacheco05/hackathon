@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Tu carrito te espera – {{ app_name }}{% endblock %}
+
+{% block preheader %}Tienes productos en tu carrito. Completa tu compra antes de que se vacíe. Total ${{ cart.total }}.{% endblock %}
+
+{% block content %}
+<div class="greeting">¡No te pierdas estos productos!</div>
+
+<div class="alert alert-warning">
+    <strong>Tu carrito te está esperando.</strong> Tienes productos listos para comprar.
+</div>
+
+<div class="content-block">
+    <h2>Productos en tu carrito</h2>
+    <table class="table">
+        <thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th></tr></thead>
+        <tbody>
+        {% for item in (cart.items or []) %}
+        <tr>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td class="price">${{ item.price }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="content-block">
+    <table class="table">
+        <tr><td><strong>Subtotal</strong></td><td>${{ cart.subtotal }}</td></tr>
+        <tr><td><strong>Envío</strong></td><td>{{ cart.shipping_cost }}</td></tr>
+        <tr><td><strong>Total</strong></td><td class="price">${{ cart.total }}</td></tr>
+    </table>
+</div>
+
+<div class="alert alert-info">
+    Completa tu compra y obtén envío gratis en compras mayores a $75, y devoluciones gratuitas por 30 días.
+</div>
+
+{% set cart_url = frontend_url ~ '/cart' %}
+<div class="text-center">
+    {% set url = cart_url %}
+{% set label = "Completar compra" %}
+{% set variant = "primary" %}
+{% include "_button.html" %}
+</div>
+
+<div class="alert alert-danger">
+    <strong>Tiempo limitado.</strong> Tu carrito puede vaciarse. No pierdas estos productos.
+</div>
+
+<div class="content-block text-center">
+    <p>¿Ayuda? <a href="mailto:{{ support_email }}" style="color:#dc2626;">{{ support_email }}</a></p>
+    <p class="text-muted">Gracias por elegir {{ app_name }}.</p>
+</div>
+{% endblock %}

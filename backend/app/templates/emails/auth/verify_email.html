@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Verifica tu cuenta – {{ app_name }}{% endblock %}
+
+{% block preheader %}Verifica tu email para activar tu cuenta en {{ app_name }}. El enlace caduca en {{ expires_in_hours }} horas.{% endblock %}
+
+{% block content %}
+<div class="greeting">¡Hola {{ user_name }}!</div>
+
+<div class="content-block">
+    <h2>Verifica tu dirección de email</h2>
+    <p>Para completar tu registro en {{ app_name }} y acceder a todas las funcionalidades, necesitamos verificar tu dirección de email.</p>
+</div>
+
+<div class="alert alert-info">
+    <strong>Seguridad:</strong> La verificación protege tu cuenta, permite notificaciones importantes y recuperar tu contraseña si hace falta.
+</div>
+
+<div class="text-center">
+    {% set url = verify_url %}
+{% set label = "Verificar mi email" %}
+{% set variant = "success" %}
+{% include "_button.html" %}
+</div>
+
+<div class="content-block">
+    <p><strong>Importante:</strong> Este enlace expira en {{ expires_in_hours }} horas y solo funciona una vez.</p>
+</div>
+
+<div class="alert alert-warning">
+    <strong>¿No ves el botón?</strong> Copia y pega en tu navegador:<br>
+    <span style="word-break:break-all; background:#f9fafb; padding:8px; display:inline-block; margin-top:8px; font-size:14px;">{{ verify_url }}</span>
+</div>
+
+<div class="divider"></div>
+
+<div class="content-block">
+    <p>Si no creaste una cuenta en {{ app_name }}, ignora este email. Tu dirección no será guardada.</p>
+    <p>¿Ayuda? Escribe a <a href="mailto:{{ support_email }}" style="color:#dc2626;">{{ support_email }}</a>.</p>
+</div>
+
+<div class="text-center text-muted">
+    <p>Gracias por elegir {{ app_name }}.</p>
+</div>
+{% endblock %}

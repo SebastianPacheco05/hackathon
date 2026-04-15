@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Tu pedido #{{ order.id }} fue entregado – {{ app_name }}{% endblock %}
+
+{% block preheader %}Tu pedido #{{ order.id }} fue entregado. ¿Nos dejas tu opinión? Gracias por comprar en {{ app_name }}.{% endblock %}
+
+{% block content %}
+<div class="greeting">¡Tu orden ha llegado!</div>
+
+<div class="alert alert-success">
+    <strong>Entrega completada.</strong> Tu pedido fue entregado en tu dirección.
+</div>
+
+<div class="content-block">
+    <h2>Detalles de la entrega</h2>
+    <table class="table">
+        <tr><td><strong>N.º de orden</strong></td><td>#{{ order.id }}</td></tr>
+        <tr><td><strong>Fecha de entrega</strong></td><td>{{ order.delivered_at }}</td></tr>
+        <tr><td><strong>Dirección</strong></td><td>{{ order.delivery_address }}</td></tr>
+        <tr><td><strong>Estado</strong></td><td><span style="background:#16a34a; color:#fff; padding:4px 8px; border-radius:4px;">Entregado</span></td></tr>
+    </table>
+</div>
+
+<div class="content-block">
+    <h3>Productos entregados</h3>
+    <table class="table">
+        <thead><tr><th>Producto</th><th>Cantidad</th></tr></thead>
+        <tbody>
+        {% for item in (order.items or []) %}
+        <tr><td>{{ item.product_name }}</td><td>{{ item.quantity }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="alert alert-info">
+    Nos encantaría conocer tu opinión. Tu reseña nos ayuda a mejorar.
+</div>
+
+{% set review_url = frontend_url ~ '/orders/' ~ order.id ~ '/review' %}
+<div class="text-center">
+    {% set url = review_url %}
+{% set label = "Dejar reseña" %}
+{% set variant = "warning" %}
+{% include "_button.html" %}
+</div>
+
+<div class="content-block text-center">
+    <p><a href="{{ frontend_url }}/productos" style="color:#dc2626;">Seguir comprando</a> · <a href="mailto:{{ support_email }}" style="color:#dc2626;">Ayuda</a></p>
+    <p class="text-muted">Gracias por elegir {{ app_name }}.</p>
+</div>
+{% endblock %}

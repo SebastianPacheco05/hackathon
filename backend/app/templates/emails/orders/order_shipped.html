@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Tu pedido #{{ order.id }} está en camino – {{ app_name }}{% endblock %}
+
+{% block preheader %}Tu pedido #{{ order.id }} ha sido enviado. Rastrea el envío con el número {{ order.tracking_number }}.{% endblock %}
+
+{% block content %}
+<div class="greeting">¡Tu orden está en camino!</div>
+
+<div class="alert alert-success">
+    <strong>Tu pedido ha sido enviado</strong> y está en camino a tu dirección.
+</div>
+
+<div class="content-block">
+    <h2>Detalles del envío</h2>
+    <table class="table">
+        <tr><td><strong>N.º de orden</strong></td><td>#{{ order.id }}</td></tr>
+        <tr><td><strong>Fecha de envío</strong></td><td>{{ order.shipped_at }}</td></tr>
+        <tr><td><strong>Seguimiento</strong></td><td style="font-weight:bold;">{{ order.tracking_number }}</td></tr>
+        <tr><td><strong>Transportista</strong></td><td>{{ order.shipping_company }}</td></tr>
+        <tr><td><strong>Dirección</strong></td><td>{{ order.shipping_address }}</td></tr>
+        <tr><td><strong>Entrega estimada</strong></td><td style="font-weight:bold;">{{ order.estimated_delivery }}</td></tr>
+    </table>
+</div>
+
+<div class="content-block">
+    <h3>Productos enviados</h3>
+    <table class="table">
+        <thead><tr><th>Producto</th><th>Cantidad</th></tr></thead>
+        <tbody>
+        {% for item in (order.items or []) %}
+        <tr><td>{{ item.product_name }}</td><td>{{ item.quantity }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="alert alert-info">
+    <strong>Rastrea tu paquete:</strong> usa el número <strong>{{ order.tracking_number }}</strong> en la web del transportista.
+</div>
+
+<div class="text-center">
+    {% set url = order.tracking_url|default(frontend_url) %}
+{% set label = "Rastrear envío" %}
+{% set variant = "primary" %}
+{% include "_button.html" %}
+</div>
+
+<div class="content-block text-center">
+    <p>¿Ayuda? <a href="mailto:{{ support_email }}" style="color:#dc2626;">{{ support_email }}</a></p>
+    <p class="text-muted">Gracias por elegir {{ app_name }}.</p>
+</div>
+{% endblock %}
