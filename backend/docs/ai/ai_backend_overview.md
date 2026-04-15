@@ -1,6 +1,6 @@
 # Vista general del backend para el asistente de IA
 
-Documento de referencia para que el modelo entienda los dominios y capacidades del backend de Compralo.
+Documento de referencia para que el modelo entienda los dominios y capacidades del backend de AGROSALE.
 
 ## Dominios principales
 

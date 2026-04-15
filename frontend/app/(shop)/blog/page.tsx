@@ -8,28 +8,28 @@ const MOCK_POSTS = [
     titulo: "Cómo elegir el mejor producto para tu hogar",
     extracto: "Consejos prácticos para comparar opciones y tomar la mejor decisión de compra.",
     fecha: "2025-02-01",
-    autor: "Equipo Compralo",
+    autor: "Equipo AGROSALE",
   },
   {
     id: "2",
     titulo: "Nuevas categorías disponibles en la tienda",
     extracto: "Te presentamos las últimas líneas y sublíneas añadidas a nuestro catálogo.",
     fecha: "2025-01-28",
-    autor: "Equipo Compralo",
+    autor: "Equipo AGROSALE",
   },
   {
     id: "3",
     titulo: "Envíos rápidos: cómo lo hacemos",
     extracto: "Detrás de escena de nuestra logística para que recibas tu pedido a tiempo.",
     fecha: "2025-01-15",
-    autor: "Equipo Compralo",
+    autor: "Equipo AGROSALE",
   },
 ]
 
 export const generateMetadata = (): Metadata => {
-  const title = "Blog de Compralo"
+  const title = "Blog de AGROSALE"
   const description =
-    "Lee noticias, consejos y novedades sobre Compralo, envíos, categorías y experiencia de compra."
+    "Lee noticias, consejos y novedades sobre AGROSALE, envíos, categorías y experiencia de compra."
 
   return {
     title,
@@ -53,7 +53,7 @@ export default function BlogPage() {
         Blog
       </h1>
       <p className="text-gray-600 dark:text-gray-400 mb-8">
-        Noticias, consejos y novedades de Compralo.
+        Noticias, consejos y novedades de AGROSALE.
       </p>
 
       <ul className="space-y-6">

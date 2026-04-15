@@ -29,7 +29,7 @@ const MOCK = {
 export const generateMetadata = (): Metadata => {
   const title = "Accesibilidad del sitio"
   const description =
-    "Conoce el compromiso de Compralo con la accesibilidad web, las medidas implementadas y cómo reportar problemas."
+    "Conoce el compromiso de AGROSALE con la accesibilidad web, las medidas implementadas y cómo reportar problemas."
 
   return {
     title,

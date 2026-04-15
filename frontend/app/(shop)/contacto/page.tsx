@@ -4,7 +4,7 @@ import { Mail, MapPin, Phone, Clock } from "lucide-react"
 import { buildOpenGraph, buildTwitter } from "@/lib/seo"
 
 const MOCK = {
-  email: "contacto@compralo.com",
+  email: "contacto@AGROSALE.com",
   telefono: "+57 1 234 5678",
   direccion: "Calle 123 #45-67, Bogotá, Colombia",
   horario: "Lunes a Viernes: 8:00 - 18:00 | Sábados: 9:00 - 14:00",
@@ -15,9 +15,9 @@ const MOCK = {
 }
 
 export const generateMetadata = (): Metadata => {
-  const title = "Contacto | Compralo"
+  const title = "Contacto | AGROSALE"
   const description =
-    "Ponte en contacto con el equipo de Compralo por email, teléfono o visita nuestras oficinas."
+    "Ponte en contacto con el equipo de AGROSALE por email, teléfono o visita nuestras oficinas."
 
   return {
     title,

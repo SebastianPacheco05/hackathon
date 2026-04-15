@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getPublicSiteOrigin } from "@/utils/url-helpers";
 
 const siteOrigin = getPublicSiteOrigin();
-const siteName = "Compralo";
+const siteName = "AGROSALE";
 
 export function buildCanonical(pathname: string): string {
   try {

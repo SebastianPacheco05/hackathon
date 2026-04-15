@@ -1,4 +1,4 @@
-const DEFAULT_PUBLIC_SITE_URL = "https://compralo.revital.cloud";
+const DEFAULT_PUBLIC_SITE_URL = "https://AGROSALE.revital.cloud";
 
 export function getPublicSiteOrigin(): string {
   const rawUrl =

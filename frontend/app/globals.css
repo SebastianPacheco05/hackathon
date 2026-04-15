@@ -49,7 +49,7 @@
 
 :root {
   --radius: 0.625rem;
-  /* Colores principales de Compralo - Valores hexadecimales exactos */
+  /* Colores principales de AGROSALE - Valores hexadecimales exactos */
   --background: #F5F5F5;
   --foreground: #000000;
   --card: #FFFFFF;
@@ -100,7 +100,7 @@
 }
 
 .dark {
-  /* Colores oscuros de Compralo (azules profundos) */
+  /* Colores oscuros de AGROSALE (azules profundos) */
   --background: #0b1220; /* fondo principal azul oscuro */
   --foreground: #FFFFFF;
   --card: #10192e; /* un poco más claro que background */

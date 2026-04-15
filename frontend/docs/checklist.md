@@ -6,7 +6,7 @@ Usa esta lista cada vez que añadas/modifiques una página en `app/(shop)`:
    - [ ] La página exporta `metadata` o `generateMetadata`.
    - [ ] Title:
      - [ ] Es único y describe claramente el contenido/intent.
-     - [ ] Usa el patrón de marca (`%s | Compralo`) cuando aplique.
+     - [ ] Usa el patrón de marca (`%s | AGROSALE`) cuando aplique.
    - [ ] Meta description:
      - [ ] Resume la página en 1–2 frases orientadas a clic (sin keyword stuffing).
 

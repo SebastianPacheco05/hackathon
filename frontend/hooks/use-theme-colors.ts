@@ -19,7 +19,7 @@ export interface ThemeColors {
   border: string;
   divider: string;
   
-  // Colores de marca (Compralo)
+  // Colores de marca (AGROSALE)
   brand: {
     primary: string;
     secondary: string;

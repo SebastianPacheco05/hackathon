@@ -32,9 +32,9 @@ const geistMono = Geist_Mono({
 });
 
 const siteOrigin = getPublicSiteOrigin();
-const siteName = "Compralo";
+const siteName = "AGROSALE";
 const siteDescription =
-  "Compralo es tu tienda online para descubrir y comprar productos de múltiples categorías con envíos rápidos y seguros.";
+  "AGROSALE es tu tienda online para descubrir y comprar productos de múltiples categorías con envíos rápidos y seguros.";
 
 // Metadata global para SEO y social sharing.
 export const metadata: Metadata = {

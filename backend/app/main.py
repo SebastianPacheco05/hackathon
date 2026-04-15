@@ -102,8 +102,8 @@ _redoc_url = None if is_production() else "/redoc"
 _openapi_url = None if is_production() else "/openapi.json"
 
 app = FastAPI(
-    title="Compralo API",
-    description="API para la plataforma Compralo",
+    title="AGROSALE API",
+    description="API para la plataforma AGROSALE",
     version="1.0.0",
     docs_url=_docs_url,
     redoc_url=_redoc_url,
@@ -128,7 +128,7 @@ async def add_trace_id_middleware(request: Request, call_next):
 # Orígenes permitidos para CORS (dev y prod)
 ALLOWED_CORS_ORIGINS = [
     # Producción
-    "https://compralo.revital.cloud",
+    "https://AGROSALE.revital.cloud",
     # Frontend local en dev
     "http://localhost:3000",
     # Frontend dev expuesto por IP del servidor
@@ -214,8 +214,8 @@ if is_production():
     # Permitimos tanto el host del frontend como los hosts del backend (api.*) y la IP del servidor.
     _allowed_hosts = list(
         {
-            _frontend_host,                  # compralo.revital.cloud
-            f"api.{_frontend_host}",        # api.compralo.revital.cloud
+            _frontend_host,                  # AGROSALE.revital.cloud
+            f"api.{_frontend_host}",        # api.AGROSALE.revital.cloud
             ".revital.cloud",               # cualquier subdominio de revital.cloud
             "localhost",
             "46.225.94.64",
@@ -285,7 +285,7 @@ def read_root(request: Request):
     Returns:
         dict: Un mensaje de bienvenida.
     """
-    return {"message": "Bienvenido a la API de Compralo"}
+    return {"message": "Bienvenido a la API de AGROSALE"}
 
 # Incluye el router de autenticación con un prefijo de API.
 app.include_router(auth_router, prefix=settings.API_STR)

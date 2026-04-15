@@ -83,7 +83,7 @@ class Settings(BaseSettings):
     
     # Configuración de la API
     API_STR: str = "/api"
-    PROJECT_NAME: str = "Compralo API"
+    PROJECT_NAME: str = "AGROSALE API"
     
     # Configuración de Wompi
     WOMPI_PUBLIC_KEY: str

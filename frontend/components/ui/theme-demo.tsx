@@ -117,7 +117,7 @@ export function ThemeDemo() {
           <CardHeader>
             <CardTitle className={THEME_CLASSES.textPrimary}>Colores de Marca</CardTitle>
             <CardDescription className={THEME_CLASSES.textSecondary}>
-              Paleta de Compralo adaptativa
+              Paleta de AGROSALE adaptativa
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
